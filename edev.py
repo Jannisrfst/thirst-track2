@@ -1,4 +1,3 @@
-from evdev import InputDevice, categorize, ecodes
 # MOCKED barcode scanning logic for API development on macOS.
 # No hardware or evdev dependencies. All functions return safe dummy values.
 import asyncio

@@ -15,7 +15,7 @@ export const BarcodeScanner = () => {
     }
 
     try {
-      const response = await fetch('/api/add', {
+      const response = await fetch('http://localhost:5001/api/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

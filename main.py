@@ -15,15 +15,8 @@ from typing import Optional
 
 app = Flask(__name__)
 
-# Configure CORS to only allow requests from the React frontend
-CORS(app, resources={
-    r"/api/*": {
-        "origins": ["http://localhost:3000"],  
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type"],
-        "supports_credentials": True
-    }
-})
+# Configure CORS to allow all origins during development
+CORS(app, supports_credentials=True, origins="*", allow_headers=["Content-Type"])
 
 # Create a Blueprint for API routes
 api_bp = Blueprint('api', __name__, url_prefix='/api')
@@ -70,7 +63,7 @@ def entries():
 # Register the Blueprint with the app
 app.register_blueprint(api_bp)
 
-con = sqlite3.connect('/home/jannisreufsteck/thirst-track/getraenke.sqlite3')
+con = sqlite3.connect('getraenke.sqlite3')
 cur = con.cursor()
 cur.execute("SELECT * FROM Entries")
 print(cur.fetchall())
@@ -150,4 +143,4 @@ def decrementByNumber(number: int) -> None:
     con.commit()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5001)
