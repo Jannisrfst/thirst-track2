@@ -7,11 +7,10 @@ from classes.MaterialType import MaterialType
 from classes.Bottle import Bottle
 from classes.User import User
 import threading
-import sqlite3
 import atexit
 import time
 import asyncio
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 app = Flask(__name__)
 
@@ -31,10 +30,12 @@ def add_entries():
         if barcode is None or quantity is None:
             return jsonify({"status": "error", "message": "Barcode and quantity required"}), 400
 
+        # Create a PersistanceLayer instance
+        persistance = PersistanceLayer(barcode, int(quantity))
+        
         # Insert 'quantity' rows
         for i in range(int(quantity)):
-            cur.execute("INSERT INTO Entries (number) VALUES(?)", (barcode,))
-        con.commit()
+            persistance.addToSql()
 
         return jsonify({
             "status": "success",
@@ -49,10 +50,19 @@ def add_entries():
 @api_bp.route("/entries")
 def entries():
     try:
+        # Using a generic PersistanceLayer instance just to access the database
+        # We're not using barcode-specific operations here
+        persistance = PersistanceLayer("", 0)
+        con = persistance._getConnection()
+        cur = con.cursor()
+        
         cur.execute("SELECT * FROM Entries")
+        result = cur.fetchall()
+        con.close()
+        
         return jsonify({
             "status": "success",
-            "data": cur.fetchall()
+            "data": result
         }), 200
     except Exception as e:
         return jsonify({
@@ -63,10 +73,20 @@ def entries():
 # Register the Blueprint with the app
 app.register_blueprint(api_bp)
 
-con = sqlite3.connect('getraenke.sqlite3')
-cur = con.cursor()
-cur.execute("SELECT * FROM Entries")
-print(cur.fetchall())
+# Print initial entries for debugging (using PersistanceLayer)
+def print_initial_entries():
+    try:
+        persistance = PersistanceLayer("", 0)
+        con = persistance._getConnection()
+        cur = con.cursor()
+        cur.execute("SELECT * FROM Entries")
+        print(cur.fetchall())
+        con.close()
+    except Exception as e:
+        print(f"Error printing initial entries: {e}")
+
+# Execute initial query in thread-safe way
+print_initial_entries()
 
 # Flag to control scanner processing
 scanner_running: bool = False
@@ -139,8 +159,9 @@ def cleanup() -> None:
 
 
 def decrementByNumber(number: int) -> None:
-    cur.execute("DELETE FROM Entries WHERE number = ? LIMIT 1", (number,))
-    con.commit()
+    # Create a PersistanceLayer instance with the barcode number
+    persistance = PersistanceLayer(str(number))
+    persistance.decrementFromSql()
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5001)

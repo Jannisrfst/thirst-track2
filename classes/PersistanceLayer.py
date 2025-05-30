@@ -13,7 +13,7 @@ class PersistanceLayer:
         """
         self._barcode: str = barcode
         self._amount: int = amount
-        self._db_path: str = '/home/jannisreufsteck/thirst-track/getraenke.sqlite3'
+        self._db_path: str = 'getraenke.sqlite3'
                 
     def _getConnection(self) -> sqlite3.Connection:
         """Get a connection to the SQLite database."""
