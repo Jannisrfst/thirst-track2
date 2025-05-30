@@ -48,17 +48,11 @@ def add_entries():
         }), 500
 
 @api_bp.route("/entries")
-def entries():
+def inventory():
     try:
-        # Using a generic PersistanceLayer instance just to access the database
-        # We're not using barcode-specific operations here
-        persistance = PersistanceLayer("", 0)
-        con = persistance._getConnection()
-        cur = con.cursor()
-        
-        cur.execute("SELECT * FROM Entries")
-        result = cur.fetchall()
-        con.close()
+        # Using a generic PersistanceLayer instance to retrieve inventory data
+        persistance = PersistanceLayer("", 0)  # Empty barcode and 0 amount for inventory retrieval
+        result = persistance.getInventory()
         
         return jsonify({
             "status": "success",

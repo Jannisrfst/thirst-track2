@@ -1,6 +1,6 @@
 import sqlite3
 import requests
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 class PersistanceLayer:
     def __init__(self, barcode: str, amount: int = 1) -> None:
@@ -32,6 +32,36 @@ class PersistanceLayer:
         cur = con.cursor()
         cur.execute("DELETE FROM Entries WHERE number = ? LIMIT ?", (self._barcode, self._amount))
         con.commit()
+    
+    def getInventory(self) -> List[Dict[str, Any]]:  
+        """Retrieve the current inventory with barcode counts.
+    
+        Returns:
+            List[Dict[str, Any]]: A list of dictionaries containing barcode and count
+        """
+        con = None
+        try:
+            con = self._getConnection()
+            cur = con.cursor()
+            
+            # Get count of each barcode
+            cur.execute("""
+                SELECT number, COUNT(*) as count 
+                FROM Entries 
+                GROUP BY number
+                ORDER BY count DESC
+            """)
+            result = cur.fetchall()
+            
+            # Convert to list of dicts
+            return [{"barcode": row[0], "count": row[1]} for row in result]
+        except Exception as e:
+            # Log the error if needed
+            print(f"Error retrieving inventory: {str(e)}")
+            raise
+        finally:
+            if con:
+                con.close()
 
     @property
     def amount(self) -> int:
