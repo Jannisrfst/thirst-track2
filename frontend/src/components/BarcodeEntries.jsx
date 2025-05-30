@@ -60,6 +60,12 @@ export const BarcodeScanner = () => {
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
             required
+            style={{
+              WebkitAppearance: 'none',
+              MozAppearance: 'textfield',
+              appearance: 'none',
+              margin: 0
+            }}
           />
         </div>
         <button type="submit" className="enterButton">Enter</button>
