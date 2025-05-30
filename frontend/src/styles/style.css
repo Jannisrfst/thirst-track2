@@ -1,0 +1,231 @@
+.container {
+  background-color: #fff;
+  width: 100vw;
+  min-height: 100vh;
+  margin: 0;
+  font-family: Inter, sans-serif;
+  box-sizing: border-box;
+} 
+  
+  .mainContent {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
+  box-sizing: border-box;
+}
+  
+  @media (width <= 640px) {
+    .mainContent {
+      padding: 10px;
+    }
+  }
+  
+  .header {
+    background-color: #fff;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    display: flex;
+  }
+  
+  .headerTitle {
+    color: #7b8aa2;
+    font-size: 17px;
+    font-weight: 400;
+  }
+  
+  .menuIcon {
+    width: 15px;
+    height: 7px;
+  }
+  
+  .panelsContainer {
+  flex: 1 1 auto;
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+  justify-content: center;
+}
+  
+  @media (width <= 640px) {
+    .panelsContainer {
+      flex-direction: column;
+    }
+  }
+  
+  .leftPanel, .rightPanel {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+  background-color: #fcfcfc;
+  border-radius: 4px;
+  padding: 12px;
+}
+  
+  .scannerSection {
+    background-color: #fdfdfd;
+    border: 1px solid #f8fafb;
+    border-radius: 4px;
+    padding: 15px;
+  }
+  
+  .sectionTitle {
+    color: #8a94a8;
+    margin-bottom: 15px;
+    font-size: 12px;
+  }
+  
+  .inputLabel {
+    color: #949cad;
+    margin-bottom: 5px;
+    font-size: 9px;
+  }
+  
+  .barcodeInput {
+    background-color: #fefefd;
+    border: 1px solid #f3f7f9;
+    width: 100%;
+    height: 21px;
+    margin-bottom: 10px;
+  }
+  
+  .enterButton {
+    color: #cbdae9;
+    cursor: pointer;
+    background-color: #98b6d5;
+    border: 1px solid #b9cde2;
+    border-radius: 4.75px;
+    padding: 7px 28px;
+    font-size: 8px;
+    align-self: flex-start;
+    margin-top: 5px;
+  }
+  
+  .inventoryHeader {
+    color: #959eaf;
+    background-color: #f1f5f8;
+    margin-bottom: 10px;
+    padding: 5px;
+    font-size: 8px;
+    display: flex;
+  }
+  
+  .columnName,
+  .columnPrice,
+  .columnStock {
+    text-align: left;
+    flex: 1;
+  }
+  
+  .inventoryRow {
+    margin-bottom: 8px;
+    display: flex;
+  }
+  
+  .rowCell {
+    background-color: #f0f0f0;
+    flex: 1;
+    height: 3px;
+  }
+  
+  .rightPanel {
+    background-color: #fcfcfc;
+    border-radius: 4px;
+    padding: 12px;
+  }
+  
+  .productSection {
+    background-color: #fdfdfd;
+    border: 1px solid #f8fafb;
+    border-radius: 4px;
+    padding: 15px;
+  }
+  
+  .barcodeContainer {
+    text-align: center;
+    margin: 20px 0;
+  }
+  
+  .barcodeImage {
+    border-radius: 14px 6px 6px 9px;
+    width: 90px;
+    height: 54px;
+  }
+  
+  .barcodeNumber {
+    color: #a4a7ab;
+    margin-top: 5px;
+    font-size: 8px;
+  }
+  
+  .productLabel {
+    color: #9ea5b5;
+    margin-bottom: 5px;
+    font-size: 10px;
+  }
+  
+  .buttonContainer {
+    gap: 10px;
+    margin-top: 15px;
+    display: flex;
+  }
+  
+  .actionButton {
+    color: #c5d6e7;
+    cursor: pointer;
+    background-color: #99b6d5;
+    border: none;
+    border-radius: 4.5px;
+    padding: 7px 28px;
+    font-size: 9.5px;
+  }
+  
+  /* Form group styling */
+  .formGroup {
+    margin-bottom: 10px;
+  }
+
+  /* Quantity input styling */
+  .quantityInput {
+    background-color: #fefefd;
+    border: 1px solid #f3f7f9;
+    width: 60px;
+    height: 21px;
+    margin-bottom: 10px;
+    padding: 0 5px;
+  }
+
+  /* Status message styling */
+  .statusMessage {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .statusMessage.success {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+  }
+
+  .statusMessage.error {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ef9a9a;
+  }
+
+  /* Ensure form elements have consistent spacing */
+  .scannerSection form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
