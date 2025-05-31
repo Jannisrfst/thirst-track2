@@ -16,16 +16,6 @@ export const ProductDetails = () => {
         />
         <div className="barcodeNumber">{activeBarcode || '123456789012'}</div>
       </div>
-      <div>
-        <label className="productLabel">Name</label>
-        <input type="text" className="barcodeInput" />
-        <label className="productLabel">Stock</label>
-        <input type="text" className="barcodeInput" />
-        <div className="buttonContainer">
-          <button className="actionButton">Add</button>
-          <button className="actionButton">Edit</button>
-        </div>
-      </div>
     </section>
   );
 };
