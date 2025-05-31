@@ -4,11 +4,13 @@ import { ThirstTrackHeader } from './components/Header';
 import { BarcodeScanner } from './components/BarcodeEntries';
 import { InventoryList } from './components/InventoryList';
 import { ProductDetails } from './components/ProductDetails';
+import { BarcodeProvider } from './context/BarcodeContext';
 
 function App() {
   return (
-    <main className="container">
-      <div className="mainContent">
+    <BarcodeProvider>
+      <main className="container">
+        <div className="mainContent">
         <ThirstTrackHeader />
         <div className="panelsContainer">
           <section className="leftPanel">
@@ -19,8 +21,9 @@ function App() {
             <ProductDetails />
           </section>
         </div>
-      </div>
-    </main>
+        </div>
+      </main>
+    </BarcodeProvider>
   );
 }
 

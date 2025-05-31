@@ -1,8 +1,10 @@
 "use client";
 import React from 'react';
+import { useBarcode } from '../context/BarcodeContext';
 
 
 export const ProductDetails = () => {
+  const { activeBarcode } = useBarcode();
   return (
     <section className="productSection">
       <h2 className="sectionTitle">Product Details</h2>
@@ -12,7 +14,7 @@ export const ProductDetails = () => {
           alt="Barcode"
           className="barcodeImage"
         />
-        <div className="barcodeNumber">123456789012</div>
+        <div className="barcodeNumber">{activeBarcode || '123456789012'}</div>
       </div>
       <div>
         <label className="productLabel">Name</label>

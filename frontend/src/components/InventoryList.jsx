@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useBarcode } from '../context/BarcodeContext';
 
 export const InventoryList = () => {
   const [inventory, setInventory] = useState([]);
@@ -6,6 +7,7 @@ export const InventoryList = () => {
   const [error, setError] = useState(null);
   const [hoveredRow, setHoveredRow] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
+  const { setActiveBarcode } = useBarcode();
 
   useEffect(() => {
     const fetchInventory = async () => {
@@ -218,7 +220,11 @@ export const InventoryList = () => {
               }}
               onMouseEnter={() => setHoveredRow(index)}
               onMouseLeave={() => setHoveredRow(null)}
-              onClick={() => setSelectedItem(selectedItem === item ? null : item)}
+              onClick={() => {
+                const newSelectedItem = selectedItem === item ? null : item;
+                setSelectedItem(newSelectedItem);
+                setActiveBarcode(newSelectedItem ? newSelectedItem.barcode : '');
+              }}
             >
               <div style={styles.cell}>{item.barcode}</div>
               <div style={{...styles.cell, ...styles.count}}>{item.count}</div>
