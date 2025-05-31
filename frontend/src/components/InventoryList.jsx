@@ -5,6 +5,7 @@ export const InventoryList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [hoveredRow, setHoveredRow] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   useEffect(() => {
     const fetchInventory = async () => {
@@ -76,6 +77,11 @@ export const InventoryList = () => {
       borderLeft: '4px solid #4a90e2',
       boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
     },
+    rowSelected: {
+      borderLeft: '4px solid #2e7d32',
+      backgroundColor: '#f0f7ff',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+    },
     cell: {
       fontSize: '1rem',
       display: 'flex',
@@ -108,6 +114,54 @@ export const InventoryList = () => {
       backgroundColor: '#fdf7f7',
       borderRadius: '6px',
       border: '1px solid #f4cecd'
+    },
+    detailsPanel: {
+      marginTop: '20px',
+      padding: '15px',
+      backgroundColor: 'white',
+      borderRadius: '6px',
+      border: '1px solid #e0e0e0',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+    },
+    detailsTitle: {
+      fontSize: '1.2rem',
+      marginBottom: '15px',
+      fontWeight: '500',
+      color: '#333'
+    },
+    detailsRow: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 2fr',
+      padding: '8px 0',
+      borderBottom: '1px solid #f0f0f0'
+    },
+    detailsLabel: {
+      fontWeight: '500',
+      color: '#666'
+    },
+    detailsValue: {
+      color: '#333'
+    },
+    actionButtons: {
+      marginTop: '15px',
+      display: 'flex',
+      gap: '10px'
+    },
+    button: {
+      padding: '8px 15px',
+      border: 'none',
+      borderRadius: '4px',
+      cursor: 'pointer',
+      fontWeight: '500',
+      transition: 'all 0.2s ease'
+    },
+    editButton: {
+      backgroundColor: '#4a90e2',
+      color: 'white',
+    },
+    closeButton: {
+      backgroundColor: '#f0f0f0',
+      color: '#555',
     }
   };
   
@@ -159,10 +213,12 @@ export const InventoryList = () => {
               key={index} 
               style={{
                 ...styles.row,
-                ...(hoveredRow === index ? styles.rowHover : {})
+                ...(hoveredRow === index ? styles.rowHover : {}),
+                ...(selectedItem === item ? styles.rowSelected : {})
               }}
               onMouseEnter={() => setHoveredRow(index)}
               onMouseLeave={() => setHoveredRow(null)}
+              onClick={() => setSelectedItem(selectedItem === item ? null : item)}
             >
               <div style={styles.cell}>{item.barcode}</div>
               <div style={{...styles.cell, ...styles.count}}>{item.count}</div>
@@ -172,6 +228,39 @@ export const InventoryList = () => {
           <div style={styles.empty}>No items in inventory</div>
         )}
       </div>
+
+      {selectedItem && (
+        <div style={styles.detailsPanel}>
+          <h3 style={styles.detailsTitle}>Item Details</h3>
+          <div style={styles.detailsRow}>
+            <span style={styles.detailsLabel}>Barcode:</span>
+            <span style={styles.detailsValue}>{selectedItem.barcode}</span>
+          </div>
+          <div style={styles.detailsRow}>
+            <span style={styles.detailsLabel}>Quantity:</span>
+            <span style={styles.detailsValue}>{selectedItem.count}</span>
+          </div>
+          <div style={styles.actionButtons}>
+            <button 
+              style={{...styles.button, ...styles.editButton}}
+              onClick={() => {
+                // You can implement edit functionality here
+                console.log('Edit item:', selectedItem);
+                // For now, just log the action
+                alert(`Edit functionality for barcode ${selectedItem.barcode}`);
+              }}
+            >
+              Edit
+            </button>
+            <button 
+              style={{...styles.button, ...styles.closeButton}}
+              onClick={() => setSelectedItem(null)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
