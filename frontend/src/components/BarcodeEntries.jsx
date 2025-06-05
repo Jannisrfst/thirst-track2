@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from 'react';
+import './BarcodeEntries.css';
 
 export const BarcodeScanner = () => {
   const [barcode, setBarcode] = useState('');
@@ -38,39 +39,33 @@ export const BarcodeScanner = () => {
   };
 
   return (
-    <section className="scannerSection">
-      <h2 className="sectionTitle">Enter Barcode</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="formGroup">
-          <label className="inputLabel">Barcode</label>
+    <section className="scanner-section">
+      <h2 className="scanner-title">Enter Barcode</h2>
+      <form className="scanner-form" onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label className="form-label">Barcode</label>
           <input 
             type="text" 
-            className="barcodeInput" 
+            className="form-input" 
             value={barcode}
             onChange={(e) => setBarcode(e.target.value)}
             required
           />
         </div>
-        <div className="formGroup">
-          <label className="inputLabel">Quantity</label>
+        <div className="form-group">
+          <label className="form-label">Quantity</label>
           <input 
             type="number" 
-            className="quantityInput" 
+            className="form-input quantity-input" 
             min="1" 
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
             required
-            style={{
-              WebkitAppearance: 'none',
-              MozAppearance: 'textfield',
-              appearance: 'none',
-              margin: 0
-            }}
           />
         </div>
-        <button type="submit" className="enterButton">Enter</button>
+        <button type="submit" className="submit-button">Enter</button>
         {status.message && (
-          <div className={`statusMessage ${status.isError ? 'error' : 'success'}`}>
+          <div className={`status-message ${status.isError ? 'error' : 'success'}`}>
             {status.message}
           </div>
         )}

@@ -19,7 +19,7 @@ export const ProductDetails = () => {
         />
         <div className="barcodeNumber">{activeBarcode || '123456789012'}</div>
       </div>
-      
+
       {loading ? (
         <div className="loadingContainer" aria-live="polite">
           <p>Loading product information...</p>
@@ -31,7 +31,7 @@ export const ProductDetails = () => {
       ) : productData ? (
         <div className="productInfoContainer">
           <div className="infoItem">
-            <span className="infoLabel">Product Name</span>
+            <span className="infoLabel">Name</span>
             <span className="infoValue">{productData.product_name || 'Unknown'}</span>
           </div>
           <div className="infoItem">
