@@ -43,7 +43,7 @@ def add_entries():
 
         # Insert 'quantity' rows
         for i in range(int(quantity)):
-            persistance.addToSql()
+            persistance.addToSql(email)
 
         return jsonify(
             {
@@ -122,7 +122,7 @@ async def scannerProcessing() -> None:
             try:
                 persistenceObj: Optional[PersistanceLayer] = await user.scanAsync()
                 if persistenceObj and persistenceObj.barcode:
-                    persistenceObj.decrementFromSql()
+                    persistenceObj.decrementFromSql(email)
                     print(f"scanned asynchron {persistenceObj.barcode}")
             except Exception as e:
                 print(f"Error {e}")
@@ -166,7 +166,7 @@ def cleanup() -> None:
 def decrementByNumber(number: int) -> None:
     # Create a PersistanceLayer instance with the barcode number
     persistance = PersistanceLayer(str(number))
-    persistance.decrementFromSql()
+    persistance.decrementFromSql(email)
 
 
 def send_mail():
@@ -181,6 +181,4 @@ def send_mail():
 
 
 if __name__ == "__main__":
-    polling = Polling(email, count=5)
-    PersistanceLayer.set_polling_callback(polling.pollingLoop)
     app.run(debug=True, host="0.0.0.0", port=5001)

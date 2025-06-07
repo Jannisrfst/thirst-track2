@@ -46,3 +46,9 @@ class Polling:
         thread.daemon = True
         thread.start()
         return thread
+
+
+def run_polling(email_instance: Email):
+    """Global function to run polling check - used by PersistanceLayer."""
+    polling = Polling(email_instance)
+    polling.pollingLoop()

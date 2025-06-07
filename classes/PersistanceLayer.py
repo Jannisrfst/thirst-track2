@@ -1,11 +1,9 @@
 import sqlite3
 import requests
-from typing import Optional, List, Dict, Any, Callable
+from typing import Optional, List, Dict, Any
 
 
 class PersistanceLayer:
-    _polling_callback: Optional[Callable[[], None]] = None
-
     def __init__(self, barcode: str, amount: int = 1) -> None:
         """
         Initialize a PersistanceLayer instance.
@@ -18,26 +16,22 @@ class PersistanceLayer:
         self._amount: int = amount
         self._db_path: str = "getraenke.sqlite3"
 
-    @classmethod
-    def set_polling_callback(cls, callback: Callable[[], None]) -> None:
-        """Set the global polling callback for all instances."""
-        cls._polling_callback = callback
 
     def _getConnection(self) -> sqlite3.Connection:
         """Get a connection to the SQLite database."""
         return sqlite3.connect(self._db_path)
 
-    def addToSql(self) -> None:
+    def addToSql(self, email_instance=None) -> None:
         """Add the barcode to the database."""
         con = self._getConnection()
         cur = con.cursor()
         cur.execute("INSERT INTO Entries (number) VALUES(?)", (self._barcode,))
         con.commit()
+        
+        if email_instance:
+            self._trigger_polling(email_instance)
 
-        if PersistanceLayer._polling_callback:
-            PersistanceLayer._polling_callback()
-
-    def decrementFromSql(self) -> None:
+    def decrementFromSql(self, email_instance=None) -> None:
         """Decrement the count of this barcode in the database."""
         con = self._getConnection()
         cur = con.cursor()
@@ -46,9 +40,14 @@ class PersistanceLayer:
             (self._barcode, self._amount),
         )
         con.commit()
+        
+        if email_instance:
+            self._trigger_polling(email_instance)
 
-        if PersistanceLayer._polling_callback:
-            PersistanceLayer._polling_callback()
+    def _trigger_polling(self, email_instance) -> None:
+        """Trigger polling check after database changes."""
+        from classes.Polling import run_polling
+        run_polling(email_instance)
 
     def getInventory(self) -> List[Dict[str, Any]]:
         """Retrieve the current inventory with barcode counts.
