@@ -8,7 +8,6 @@ from classes.Bottle import Bottle
 from classes.User import User
 import threading
 import atexit
-import time
 import asyncio
 from typing import Optional, List, Dict, Any
 from mail import Email
