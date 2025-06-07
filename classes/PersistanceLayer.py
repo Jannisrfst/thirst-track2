@@ -1,9 +1,11 @@
 import sqlite3
 import requests
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Callable
 
 
 class PersistanceLayer:
+    _polling_callback: Optional[Callable[[], None]] = None
+
     def __init__(self, barcode: str, amount: int = 1) -> None:
         """
         Initialize a PersistanceLayer instance.
@@ -16,6 +18,11 @@ class PersistanceLayer:
         self._amount: int = amount
         self._db_path: str = "getraenke.sqlite3"
 
+    @classmethod
+    def set_polling_callback(cls, callback: Callable[[], None]) -> None:
+        """Set the global polling callback for all instances."""
+        cls._polling_callback = callback
+
     def _getConnection(self) -> sqlite3.Connection:
         """Get a connection to the SQLite database."""
         return sqlite3.connect(self._db_path)
@@ -27,6 +34,9 @@ class PersistanceLayer:
         cur.execute("INSERT INTO Entries (number) VALUES(?)", (self._barcode,))
         con.commit()
 
+        if PersistanceLayer._polling_callback:
+            PersistanceLayer._polling_callback()
+
     def decrementFromSql(self) -> None:
         """Decrement the count of this barcode in the database."""
         con = self._getConnection()
@@ -37,11 +47,14 @@ class PersistanceLayer:
         )
         con.commit()
 
+        if PersistanceLayer._polling_callback:
+            PersistanceLayer._polling_callback()
+
     def getInventory(self) -> List[Dict[str, Any]]:
         """Retrieve the current inventory with barcode counts.
 
         Returns:
-            List[Dict[str, Any]]: A list of dictionaries containing barcode and count
+            List[Dict[str, Any]]: A list of dicts with barcode and count
         """
         con = None
         try:
@@ -50,8 +63,8 @@ class PersistanceLayer:
 
             # Get count of each barcode
             cur.execute("""
-                SELECT number, COUNT(*) as count 
-                FROM Entries 
+                SELECT number, COUNT(*) as count
+                FROM Entries
                 GROUP BY number
                 ORDER BY count DESC
             """)
@@ -95,11 +108,12 @@ class PersistanceLayer:
         Returns:
             Optional[str]: The volume information if available, None otherwise
         """
-        response = requests.get(
-            f"https://world.openfoodfacts.net/api/v2/product/{self.barcode}?field=quantity"
+        url = (
+            f"https://world.openfoodfacts.net/api/v2/product/"
+            f"{self.barcode}?field=quantity"
         )
+        response = requests.get(url)
         if response.status_code == 200:
             data = response.json()
             return data.get("product", {}).get("quantity", None)
         return None
-

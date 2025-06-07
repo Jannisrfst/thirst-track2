@@ -1,16 +1,14 @@
 from flask import Flask, jsonify, Blueprint, request
 from flask_cors import CORS
-from edev import getKeycodeAsync, extractDigitsFromKeycodes, releaseDeviceAsync
-from queue import Queue
+from edev import releaseDeviceAsync
 from classes.PersistanceLayer import PersistanceLayer
-from classes.MaterialType import MaterialType
-from classes.Bottle import Bottle
 from classes.User import User
 import threading
 import atexit
 import asyncio
-from typing import Optional, List, Dict, Any
+from typing import Optional
 from mail import Email
+from classes.Polling import Polling
 
 app = Flask(__name__)
 
@@ -19,6 +17,13 @@ CORS(app, supports_credentials=True, origins="*", allow_headers=["Content-Type"]
 
 # Create a Blueprint for API routes
 api_bp = Blueprint("api", __name__, url_prefix="/api")
+email = Email(
+    host="smtp.gmail.com",
+    port=587,
+    from_email="jannis.reufsteck1@gmail.com",
+    to_email="jannis.reufsteck1@gmail.com",
+    password="cijy tpmv wigq yplb",
+)
 
 
 @api_bp.route("/add", methods=["POST"])
@@ -176,4 +181,6 @@ def send_mail():
 
 
 if __name__ == "__main__":
+    polling = Polling(email, count=5)
+    PersistanceLayer.set_polling_callback(polling.pollingLoop)
     app.run(debug=True, host="0.0.0.0", port=5001)
