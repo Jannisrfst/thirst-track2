@@ -7,31 +7,68 @@ export const InventoryList = () => {
   const [error, setError] = useState(null);
   const [hoveredRow, setHoveredRow] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [message, setMessage] = useState(null);
+  const [decrementLoading, setDecrementLoading] = useState(false);
   const { setActiveBarcode } = useBarcode();
 
-  useEffect(() => {
-    const fetchInventory = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('http://localhost:5001/api/entries');
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
-        }
-        const data = await response.json();
-        
-        if (data.status === 'success' && Array.isArray(data.data)) {
-          setInventory(data.data);
-        } else {
-          throw new Error('Invalid data format received from API');
-        }
-      } catch (err) {
-        console.error('Error fetching inventory:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
+  const fetchInventory = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('http://localhost:5001/api/entries');
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
       }
-    };
+      const data = await response.json();
+      
+      if (data.status === 'success' && Array.isArray(data.data)) {
+        setInventory(data.data);
+      } else {
+        throw new Error('Invalid data format received from API');
+      }
+    } catch (err) {
+      console.error('Error fetching inventory:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const decrementItem = async (barcode, quantity = 1) => {
+    try {
+      setDecrementLoading(true);
+      setMessage(null);
+      
+      const response = await fetch('http://localhost:5001/api/decrement', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          barcode: barcode,
+          quantity: quantity
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.status === 'success') {
+        setMessage({ type: 'success', text: data.message });
+        // Refresh inventory after successful decrement
+        await fetchInventory();
+        // Close the details panel
+        setSelectedItem(null);
+      } else {
+        throw new Error(data.message || 'Failed to decrement item');
+      }
+    } catch (err) {
+      console.error('Error decrementing item:', err);
+      setMessage({ type: 'error', text: err.message });
+    } finally {
+      setDecrementLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchInventory();
     
     // Refresh inventory data every 30 seconds
@@ -161,9 +198,30 @@ export const InventoryList = () => {
       backgroundColor: '#4a90e2',
       color: 'white',
     },
+    editButtonDisabled: {
+      backgroundColor: '#ccc',
+      color: '#666',
+      cursor: 'not-allowed'
+    },
     closeButton: {
       backgroundColor: '#f0f0f0',
       color: '#555',
+    },
+    message: {
+      padding: '10px',
+      borderRadius: '4px',
+      marginBottom: '15px',
+      fontSize: '0.9rem'
+    },
+    successMessage: {
+      backgroundColor: '#d4edda',
+      color: '#155724',
+      border: '1px solid #c3e6cb'
+    },
+    errorMessage: {
+      backgroundColor: '#f8d7da',
+      color: '#721c24',
+      border: '1px solid #f1b2b7'
     }
   };
   
@@ -238,6 +296,16 @@ export const InventoryList = () => {
       {selectedItem && (
         <div style={styles.detailsPanel}>
           <h3 style={styles.detailsTitle}>Item Details</h3>
+          
+          {message && (
+            <div style={{
+              ...styles.message,
+              ...(message.type === 'success' ? styles.successMessage : styles.errorMessage)
+            }}>
+              {message.text}
+            </div>
+          )}
+          
           <div style={styles.detailsRow}>
             <span style={styles.detailsLabel}>Barcode:</span>
             <span style={styles.detailsValue}>{selectedItem.barcode}</span>
@@ -248,19 +316,21 @@ export const InventoryList = () => {
           </div>
           <div style={styles.actionButtons}>
             <button 
-              style={{...styles.button, ...styles.editButton}}
-              onClick={() => {
-                // You can implement edit functionality here
-                console.log('Edit item:', selectedItem);
-                // For now, just log the action
-                alert(`Edit functionality for barcode ${selectedItem.barcode}`);
+              style={{
+                ...styles.button, 
+                ...(decrementLoading ? styles.editButtonDisabled : styles.editButton)
               }}
+              onClick={() => decrementItem(selectedItem.barcode)}
+              disabled={decrementLoading}
             >
-              Edit
+              {decrementLoading ? 'Decrementing...' : 'Decrement'}
             </button>
             <button 
               style={{...styles.button, ...styles.closeButton}}
-              onClick={() => setSelectedItem(null)}
+              onClick={() => {
+                setSelectedItem(null);
+                setMessage(null);
+              }}
             >
               Close
             </button>

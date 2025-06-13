@@ -61,6 +61,12 @@
   -moz-appearance: textfield;
 }
 
+.button-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
 .submit-button {
   background-color: #4299e1;
   color: white;
@@ -70,16 +76,37 @@
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
-  margin-top: 0.5rem;
+  transition: all 0.2s;
+  flex: 1;
 }
 
-.submit-button:hover {
-  background-color: #3182ce;
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
-.submit-button:active {
-  background-color: #2c5282;
+.add-button {
+  background-color: #48bb78;
+}
+
+.add-button:hover:not(:disabled) {
+  background-color: #38a169;
+}
+
+.add-button:active:not(:disabled) {
+  background-color: #2f855a;
+}
+
+.remove-button {
+  background-color: #f56565;
+}
+
+.remove-button:hover:not(:disabled) {
+  background-color: #e53e3e;
+}
+
+.remove-button:active:not(:disabled) {
+  background-color: #c53030;
 }
 
 .status-message {
@@ -115,5 +142,10 @@
   .form-input,
   .submit-button {
     padding: 0.65rem 1rem;
+  }
+  
+  .button-group {
+    flex-direction: column;
+    gap: 0.75rem;
   }
 }

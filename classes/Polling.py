@@ -1,5 +1,4 @@
 import threading
-import time
 from classes.PersistanceLayer import PersistanceLayer
 from mail import Email
 

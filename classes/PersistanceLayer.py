@@ -35,10 +35,20 @@ class PersistanceLayer:
         """Decrement the count of this barcode in the database."""
         con = self._getConnection()
         cur = con.cursor()
-        cur.execute(
-            "DELETE FROM Entries WHERE number = ? LIMIT ?",
-            (self._barcode, self._amount),
-        )
+        
+        # First check current count
+        cur.execute("SELECT COUNT(*) FROM Entries WHERE number = ?", (self._barcode,))
+        current_count = cur.fetchone()[0]
+        
+        if current_count < self._amount:
+            raise ValueError(f"Cannot decrement {self._amount} items. Only {current_count} available.")
+        
+        # Delete the specified number of entries using rowid
+        cur.execute("""
+            DELETE FROM Entries WHERE rowid IN (
+                SELECT rowid FROM Entries WHERE number = ? LIMIT ?
+            )
+        """, (self._barcode, self._amount))
         con.commit()
         
         if email_instance:

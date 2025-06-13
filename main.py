@@ -8,14 +8,13 @@ import atexit
 import asyncio
 from typing import Optional
 from mail import Email
-from classes.Polling import Polling
 
 app = Flask(__name__)
 
-# Configure CORS to allow all origins during development
+# Enable CORS, important to change after development
 CORS(app, supports_credentials=True, origins="*", allow_headers=["Content-Type"])
 
-# Create a Blueprint for API routes
+# Blueprint api routing /api
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 email = Email(
     host="smtp.gmail.com",
@@ -65,6 +64,34 @@ def inventory():
         result = persistance.getInventory()
 
         return jsonify({"status": "success", "data": result}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@api_bp.route("/decrement", methods=["POST"])
+def decrement_entries():
+    try:
+        data = request.get_json()
+        barcode = data.get("barcode")
+        quantity = data.get("quantity", 1)  # Default to 1 if not provided
+
+        if barcode is None:
+            return jsonify(
+                {"status": "error", "message": "Barcode is required"}
+            ), 400
+
+        # Create a PersistanceLayer instance
+        persistance = PersistanceLayer(barcode, int(quantity))
+        
+        # Decrement the specified quantity
+        persistance.decrementFromSql(email)
+
+        return jsonify(
+            {
+                "status": "success",
+                "message": f"Decremented {quantity} entries with barcode {barcode}",
+            }
+        ), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
