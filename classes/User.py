@@ -39,11 +39,20 @@ class User:
         """
         print("scanning for inputs async")
         keycodes = await getKeycodeAsync()
+        print(f"Raw keycodes received: {keycodes}")
+        
         listArrayOfValues = extractDigitsFromKeycodes(keycodes)
+        print(f"Extracted digits: {listArrayOfValues}")
+        
         barcodeString = buildString(listArrayOfValues) 
+        print(f"Constructed barcode string: '{barcodeString}'")
         
         print("finished scanning for inputs async")  
-        if len(barcodeString) == 0:  
+        
+        # Fixed logic: return PersistanceLayer when we HAVE a barcode, None when empty
+        if len(barcodeString) > 0 and barcodeString.strip():  
+            print(f"Valid barcode scanned: {barcodeString}")
             return PersistanceLayer(barcodeString)
-        print("Leerer Barcode scanning again")
-        return None
+        else:
+            print("Empty barcode, scanning again")
+            return None
