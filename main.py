@@ -8,6 +8,8 @@ import atexit
 import asyncio
 from typing import Optional
 from mail import Email
+import requests
+import json
 
 app = Flask(__name__)
 
@@ -76,13 +78,11 @@ def decrement_entries():
         quantity = data.get("quantity", 1)  # Default to 1 if not provided
 
         if barcode is None:
-            return jsonify(
-                {"status": "error", "message": "Barcode is required"}
-            ), 400
+            return jsonify({"status": "error", "message": "Barcode is required"}), 400
 
         # Create a PersistanceLayer instance
         persistance = PersistanceLayer(barcode, int(quantity))
-        
+
         # Decrement the specified quantity
         persistance.decrementFromSql(email)
 
@@ -116,55 +116,53 @@ def print_initial_entries():
 # Execute initial query in thread-safe way
 print_initial_entries()
 
-# Flag to control scanner processing
-scanner_running: bool = False
-
-
-async def keyboardInputHandler() -> None:
-    global scanner_running
-    loop = asyncio.get_event_loop()
-
-    command: str = ""
-
-    while command.strip().lower() != "start":
-        command = await loop.run_in_executor(None, input, "> ")
-
-    print("\nStarting scanner processing...")
-    scanner_running = True
-
-    while True:
-        command = await loop.run_in_executor(None, input, "Command> ")
-
-        if command.lower() == "start":
-            scanner_running = True
-            print("Scanner started")
-
 
 async def scannerProcessing() -> None:
-    global scanner_running
     user = User(1)
+    print("Scanner processing started automatically...")
 
     while True:
-        if scanner_running:
-            try:
-                persistenceObj: Optional[PersistanceLayer] = await user.scanAsync()
-                if persistenceObj and persistenceObj.barcode:
-                    persistenceObj.decrementFromSql(email)
-                    print(f"scanned asynchron {persistenceObj.barcode}")
-            except Exception as e:
-                print(f"Error {e}")
-                await asyncio.sleep(1)
+        try:
+            persistenceObj: Optional[PersistanceLayer] = await user.scanAsync()
+            if persistenceObj and persistenceObj.barcode:
+                # Use API endpoint for consistency with web UI
+                await makeDecrementApiCall(persistenceObj.barcode, 1)
+                print(f"Scanned and decremented via API: {persistenceObj.barcode}")
+        except Exception as e:
+            print(f"Scanner error: {e}")
+            await asyncio.sleep(1)
+
+
+async def makeDecrementApiCall(barcode: str, quantity: int) -> None:
+    """Make HTTP POST request to /api/decrement endpoint"""
+    try:
+        payload = {"barcode": barcode, "quantity": quantity}
+
+        response = requests.post(
+            "http://localhost:5001/api/decrement",
+            headers={"Content-Type": "application/json"},
+            json=payload,
+            timeout=5,
+        )
+
+        if response.status_code == 200:
+            result = response.json()
+            print(f"API decrement success: {result.get('message', 'Unknown response')}")
         else:
-            await asyncio.sleep(0.1)
+            print(f"API decrement failed: {response.status_code} - {response.text}")
+
+    except requests.exceptions.RequestException as e:
+        print(f"API request error: {e}")
+    except Exception as e:
+        print(f"Unexpected error in API call: {e}")
 
 
 async def mainAsyncLoop() -> None:
-    # Start both tasks
-    keyboard_task = asyncio.create_task(keyboardInputHandler())
+    # Start scanner processing task only
     scanner_task = asyncio.create_task(scannerProcessing())
 
-    # Wait for both tasks
-    await asyncio.gather(keyboard_task, scanner_task)
+    # Wait for scanner task
+    await scanner_task
 
 
 def asyncioLoop() -> None:
