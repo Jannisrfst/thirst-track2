@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useBarcode } from '../context/BarcodeContext';
+import './InventoryList.css';
 
 export const InventoryList = () => {
   const [inventory, setInventory] = useState([]);
@@ -78,166 +79,14 @@ export const InventoryList = () => {
     return () => clearInterval(intervalId);
   }, []);
 
-  const styles = {
-    container: {
-      padding: '20px',
-      backgroundColor: '#f9f9f9',
-      borderRadius: '8px',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-      margin: '20px 0'
-    },
-    title: {
-      fontSize: '1.5rem',
-      marginBottom: '20px',
-      color: '#333',
-      fontWeight: '500'
-    },
-    header: {
-      display: 'grid',
-      gridTemplateColumns: '3fr 1fr',
-      padding: '15px 20px',
-      backgroundColor: '#f0f0f0',
-      borderRadius: '6px',
-      marginBottom: '10px',
-      fontWeight: 'bold',
-      color: '#555'
-    },
-    row: {
-      display: 'grid',
-      gridTemplateColumns: '3fr 1fr',
-      padding: '15px 20px',
-      marginBottom: '8px',
-      backgroundColor: 'white',
-      borderRadius: '6px',
-      borderLeft: '4px solid #ddd',
-      transition: 'all 0.2s ease'
-    },
-    rowHover: {
-      borderLeft: '4px solid #4a90e2',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-    },
-    rowSelected: {
-      borderLeft: '4px solid #2e7d32',
-      backgroundColor: '#f0f7ff',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
-    },
-    cell: {
-      fontSize: '1rem',
-      display: 'flex',
-      alignItems: 'center'
-    },
-    count: {
-      fontWeight: '500',
-      color: '#4a90e2',
-      fontSize: '1.1rem'
-    },
-    empty: {
-      padding: '30px 20px',
-      textAlign: 'center',
-      color: '#888',
-      backgroundColor: 'white',
-      borderRadius: '6px',
-      fontSize: '1.1rem'
-    },
-    loading: {
-      padding: '30px 20px',
-      textAlign: 'center',
-      color: '#666',
-      backgroundColor: 'white',
-      borderRadius: '6px'
-    },
-    error: {
-      padding: '20px',
-      textAlign: 'center',
-      color: '#d9534f',
-      backgroundColor: '#fdf7f7',
-      borderRadius: '6px',
-      border: '1px solid #f4cecd'
-    },
-    detailsPanel: {
-      marginTop: '20px',
-      padding: '15px',
-      backgroundColor: 'white',
-      borderRadius: '6px',
-      border: '1px solid #e0e0e0',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-    },
-    detailsTitle: {
-      fontSize: '1.2rem',
-      marginBottom: '15px',
-      fontWeight: '500',
-      color: '#333'
-    },
-    detailsRow: {
-      display: 'grid',
-      gridTemplateColumns: '1fr 2fr',
-      padding: '8px 0',
-      borderBottom: '1px solid #f0f0f0'
-    },
-    detailsLabel: {
-      fontWeight: '500',
-      color: '#666'
-    },
-    detailsValue: {
-      color: '#333'
-    },
-    actionButtons: {
-      marginTop: '15px',
-      display: 'flex',
-      gap: '10px'
-    },
-    button: {
-      padding: '8px 15px',
-      border: 'none',
-      borderRadius: '4px',
-      cursor: 'pointer',
-      fontWeight: '500',
-      transition: 'all 0.2s ease'
-    },
-    editButton: {
-      backgroundColor: '#4a90e2',
-      color: 'white',
-    },
-    editButtonDisabled: {
-      backgroundColor: '#ccc',
-      color: '#666',
-      cursor: 'not-allowed'
-    },
-    closeButton: {
-      backgroundColor: '#f0f0f0',
-      color: '#555',
-    },
-    message: {
-      padding: '10px',
-      borderRadius: '4px',
-      marginBottom: '15px',
-      fontSize: '0.9rem'
-    },
-    successMessage: {
-      backgroundColor: '#d4edda',
-      color: '#155724',
-      border: '1px solid #c3e6cb'
-    },
-    errorMessage: {
-      backgroundColor: '#f8d7da',
-      color: '#721c24',
-      border: '1px solid #f1b2b7'
-    }
-  };
   
   if (loading && inventory.length === 0) {
     return (
-      <section style={styles.container}>
-        <h2 style={styles.title}>Inventory</h2>
-        <div style={styles.loading}>
+      <section className="inventory-container">
+        <h2 className="inventory-title">Inventory</h2>
+        <div className="inventory-loading">
           <div style={{marginBottom: '15px'}}>Loading inventory data...</div>
-          <div style={{width: '40px', height: '40px', margin: '0 auto', border: '3px solid #f3f3f3', borderTop: '3px solid #4a90e2', borderRadius: '50%', animation: 'spin 1s linear infinite'}}></div>
-          <style>{`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}</style>
+          <div className="inventory-spinner"></div>
         </div>
       </section>
     );
@@ -245,9 +94,9 @@ export const InventoryList = () => {
 
   if (error && inventory.length === 0) {
     return (
-      <section style={styles.container}>
-        <h2 style={styles.title}>Inventory</h2>
-        <div style={styles.error}>
+      <section className="inventory-container">
+        <h2 className="inventory-title">Inventory</h2>
+        <div className="inventory-error">
           <div style={{marginBottom: '10px', fontWeight: '500'}}>Error Loading Inventory</div>
           <div>{error}</div>
         </div>
@@ -256,11 +105,11 @@ export const InventoryList = () => {
   }
 
   return (
-    <section style={styles.container}>
-      <h2 style={styles.title}>Inventory</h2>
+    <section className="inventory-container">
+      <h2 className="inventory-title">Inventory</h2>
       
       {inventory.length > 0 && (
-        <div style={styles.header}>
+        <div className="inventory-header">
           <div>Barcode</div>
           <div>Quantity</div>
         </div>
@@ -271,11 +120,9 @@ export const InventoryList = () => {
           inventory.map((item, index) => (
             <div 
               key={index} 
-              style={{
-                ...styles.row,
-                ...(hoveredRow === index ? styles.rowHover : {}),
-                ...(selectedItem === item ? styles.rowSelected : {})
-              }}
+              className={`inventory-row ${
+                selectedItem === item ? 'selected' : ''
+              }`}
               onMouseEnter={() => setHoveredRow(index)}
               onMouseLeave={() => setHoveredRow(null)}
               onClick={() => {
@@ -284,49 +131,45 @@ export const InventoryList = () => {
                 setActiveBarcode(newSelectedItem ? newSelectedItem.barcode : '');
               }}
             >
-              <div style={styles.cell}>{item.barcode}</div>
-              <div style={{...styles.cell, ...styles.count}}>{item.count}</div>
+              <div className="inventory-cell">{item.barcode}</div>
+              <div className="inventory-cell inventory-count">{item.count}</div>
             </div>
           ))
         ) : (
-          <div style={styles.empty}>No items in inventory</div>
+          <div className="inventory-empty">No items in inventory</div>
         )}
       </div>
 
       {selectedItem && (
-        <div style={styles.detailsPanel}>
-          <h3 style={styles.detailsTitle}>Item Details</h3>
+        <div className="inventory-details-panel">
+          <h3 className="inventory-details-title">Item Details</h3>
           
           {message && (
-            <div style={{
-              ...styles.message,
-              ...(message.type === 'success' ? styles.successMessage : styles.errorMessage)
-            }}>
+            <div className={`inventory-message ${
+              message.type === 'success' ? 'success' : 'error'
+            }`}>
               {message.text}
             </div>
           )}
           
-          <div style={styles.detailsRow}>
-            <span style={styles.detailsLabel}>Barcode:</span>
-            <span style={styles.detailsValue}>{selectedItem.barcode}</span>
+          <div className="inventory-details-row">
+            <span className="inventory-details-label">Barcode:</span>
+            <span className="inventory-details-value">{selectedItem.barcode}</span>
           </div>
-          <div style={styles.detailsRow}>
-            <span style={styles.detailsLabel}>Quantity:</span>
-            <span style={styles.detailsValue}>{selectedItem.count}</span>
+          <div className="inventory-details-row">
+            <span className="inventory-details-label">Quantity:</span>
+            <span className="inventory-details-value">{selectedItem.count}</span>
           </div>
-          <div style={styles.actionButtons}>
+          <div className="inventory-action-buttons">
             <button 
-              style={{
-                ...styles.button, 
-                ...(decrementLoading ? styles.editButtonDisabled : styles.editButton)
-              }}
+              className="inventory-button inventory-edit-button"
               onClick={() => decrementItem(selectedItem.barcode)}
               disabled={decrementLoading}
             >
               {decrementLoading ? 'Decrementing...' : 'Decrement'}
             </button>
             <button 
-              style={{...styles.button, ...styles.closeButton}}
+              className="inventory-button inventory-close-button"
               onClick={() => {
                 setSelectedItem(null);
                 setMessage(null);

@@ -38,7 +38,7 @@ async def getKeycodeAsync() -> list[str]:
         if event.type == ecodes.EV_KEY:
             categorizedEvent = categorize(
                 event
-            )  # categorizes events based on types such as: EV_KEY, EV_REL, EV_ABS, EV_MSC, EV_LED, EV_SND, EV_REP, EV_FF, EV_PWR, EV_FF_STATUS, EV_MAX
+            )  # categorizes events based on types : EV_KEY, EV_REL, EV_ABS, EV_MSC, EV_LED, EV_SND, EV_REP, EV_FF, EV_PWR, EV_FF_STATUS, EV_MAX
             if event.value == 0:  # Key release
                 keycodeList.append(categorizedEvent.keycode)
             if "KEY_ENTER" in str(categorizedEvent.keycode) and event.value == 0:
@@ -51,28 +51,23 @@ def extractDigitsFromKeycodes(keycodes: List[str]) -> List[int]:
     list_array_of_values: List[int] = []
     for keycode in keycodes:
         print(f"Processing keycode: {keycode}")
-        # Handle different keycode formats - keycodes might be like 'KEY_1', 'KEY_2', etc.
-        if 'KEY_' in str(keycode):
-            # Extract the number after KEY_
-            parts = str(keycode).split('KEY_')
+        if "KEY_" in str(keycode):
+            parts = str(keycode).split("KEY_")
             if len(parts) > 1:
                 key_part = parts[1]
-                # Handle cases like KEY_1, KEY_2, ..., KEY_0
                 if key_part.isdigit():
                     digit = int(key_part)
-                    # Convert KEY_0 to actual 0
                     if digit == 0:
                         list_array_of_values.append(0)
                     else:
                         list_array_of_values.append(digit)
                     print(f"Extracted digit: {digit}")
         else:
-            # Fallback to original logic for other formats
             digits = "".join(filter(str.isdigit, str(keycode)))
             if digits:
                 list_array_of_values.append(int(digits))
                 print(f"Extracted digits (fallback): {digits}")
-    
+
     print(f"Final extracted values: {list_array_of_values}")
     return list_array_of_values
 

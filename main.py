@@ -100,23 +100,6 @@ def decrement_entries():
 app.register_blueprint(api_bp)
 
 
-# Print initial entries for debugging (using PersistanceLayer)
-def print_initial_entries():
-    try:
-        persistance = PersistanceLayer("", 0)
-        con = persistance._getConnection()
-        cur = con.cursor()
-        cur.execute("SELECT * FROM Entries")
-        print(cur.fetchall())
-        con.close()
-    except Exception as e:
-        print(f"Error printing initial entries: {e}")
-
-
-# Execute initial query in thread-safe way
-print_initial_entries()
-
-
 async def scannerProcessing() -> None:
     user = User(1)
     print("Scanner processing started automatically...")
@@ -128,6 +111,7 @@ async def scannerProcessing() -> None:
                 # Use API endpoint for consistency with web UI
                 await makeDecrementApiCall(persistenceObj.barcode, 1)
                 print(f"Scanned and decremented via API: {persistenceObj.barcode}")
+                await asyncio.sleep(1)  # Debounce delay to prevent duplicate scans
         except Exception as e:
             print(f"Scanner error: {e}")
             await asyncio.sleep(1)
