@@ -15,7 +15,7 @@ export const InventoryList = () => {
   const fetchInventory = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5001/api/entries');
+      const response = await fetch('/api/entries');
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
@@ -39,7 +39,7 @@ export const InventoryList = () => {
       setDecrementLoading(true);
       setMessage(null);
       
-      const response = await fetch('http://localhost:5001/api/decrement', {
+      const response = await fetch('/api/decrement', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
