@@ -31,7 +31,7 @@ class PersistanceLayer:
         """Add the barcode to the database."""
         con = self._getConnection()
         cur = con.cursor()
-        cur.execute("INSERT INTO entries (barcode) VALUES(?)", (self._barcode,))
+        cur.execute("INSERT INTO entries (barcode) VALUES(%s)", (self._barcode,))
         con.commit()
 
         if email_instance:
@@ -42,7 +42,7 @@ class PersistanceLayer:
         con = self._getConnection()
         cur = con.cursor()
 
-        cur.execute("SELECT COUNT(*) FROM entries WHERE barcode = ?", (self._barcode,))
+        cur.execute("SELECT COUNT(*) FROM entries WHERE barcode = %s", (self._barcode,))
         current_count = cur.fetchone()[0]
 
         if current_count < self._amount:
@@ -53,8 +53,8 @@ class PersistanceLayer:
         # Delete the specified number of entries using rowid
         cur.execute(
             """
-            DELETE FROM Entries WHERE rowid IN (
-                SELECT rowid FROM Entries WHERE number = ? LIMIT ?
+            DELETE FROM entries WHERE id IN (
+                SELECT id FROM entries WHERE barcode= %s LIMIT %s
             )
         """,
             (self._barcode, self._amount),
@@ -83,9 +83,9 @@ class PersistanceLayer:
 
             # Get count of each barcode
             cur.execute("""
-                SELECT number, COUNT(*) as count
-                FROM Entries
-                GROUP BY number
+                SELECT barcode, COUNT(*) as count
+                FROM entries
+                GROUP BY barcode
                 ORDER BY count DESC
             """)
             result = cur.fetchall()
