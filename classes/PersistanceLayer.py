@@ -15,17 +15,23 @@ class PersistanceLayer:
         """
         self._barcode: str = barcode
         self._amount: int = amount
-        self._db_path: str = "getraenke.sqlite3"
+        self._db_path: str = "thirst-track"
+        self._host: str = "127.0.0.1"
+        self._user: str = "postgres"
+        self._password: str = "2437"
+        self._port: str = "5432"
 
-    def _getConnection(self) -> sqlite3.Connection:
-        """Get a connection to the SQLite database."""
-        return sqlite3.connect(self._db_path)
+    def _getConnection(self) -> psycopg2.extensions.connection:
+        """Get the connection object to Postgresql"""
+        return psycopg2.connect(
+            database=self._db_path, user=self._user, password=self._password
+        )
 
     def addToSql(self, email_instance=None) -> None:
         """Add the barcode to the database."""
         con = self._getConnection()
         cur = con.cursor()
-        cur.execute("INSERT INTO Entries (number) VALUES(?)", (self._barcode,))
+        cur.execute("INSERT INTO entries (barcode) VALUES(?)", (self._barcode,))
         con.commit()
 
         if email_instance:
@@ -36,8 +42,7 @@ class PersistanceLayer:
         con = self._getConnection()
         cur = con.cursor()
 
-        # First check current count
-        cur.execute("SELECT COUNT(*) FROM Entries WHERE number = ?", (self._barcode,))
+        cur.execute("SELECT COUNT(*) FROM entries WHERE barcode = ?", (self._barcode,))
         current_count = cur.fetchone()[0]
 
         if current_count < self._amount:
