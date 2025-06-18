@@ -1,6 +1,7 @@
 import sqlite3
 import requests
 from typing import Optional, List, Dict, Any
+import psycopg2
 
 
 class PersistanceLayer:
@@ -16,7 +17,6 @@ class PersistanceLayer:
         self._amount: int = amount
         self._db_path: str = "getraenke.sqlite3"
 
-
     def _getConnection(self) -> sqlite3.Connection:
         """Get a connection to the SQLite database."""
         return sqlite3.connect(self._db_path)
@@ -27,7 +27,7 @@ class PersistanceLayer:
         cur = con.cursor()
         cur.execute("INSERT INTO Entries (number) VALUES(?)", (self._barcode,))
         con.commit()
-        
+
         if email_instance:
             self._trigger_polling(email_instance)
 
@@ -35,28 +35,34 @@ class PersistanceLayer:
         """Decrement the count of this barcode in the database."""
         con = self._getConnection()
         cur = con.cursor()
-        
+
         # First check current count
         cur.execute("SELECT COUNT(*) FROM Entries WHERE number = ?", (self._barcode,))
         current_count = cur.fetchone()[0]
-        
+
         if current_count < self._amount:
-            raise ValueError(f"Cannot decrement {self._amount} items. Only {current_count} available.")
-        
+            raise ValueError(
+                f"Cannot decrement {self._amount} items. Only {current_count} available."
+            )
+
         # Delete the specified number of entries using rowid
-        cur.execute("""
+        cur.execute(
+            """
             DELETE FROM Entries WHERE rowid IN (
                 SELECT rowid FROM Entries WHERE number = ? LIMIT ?
             )
-        """, (self._barcode, self._amount))
+        """,
+            (self._barcode, self._amount),
+        )
         con.commit()
-        
+
         if email_instance:
             self._trigger_polling(email_instance)
 
     def _trigger_polling(self, email_instance) -> None:
         """Trigger polling check after database changes."""
         from classes.Polling import run_polling
+
         run_polling(email_instance)
 
     def getInventory(self) -> List[Dict[str, Any]]:
