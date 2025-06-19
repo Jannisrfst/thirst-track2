@@ -15,7 +15,7 @@ class PersistanceLayer:
         self._barcode: str = barcode
         self._amount: int = amount
         self._db_path: str = "thirst-track"
-        self._host: str = "/tmp/"
+        self._host: str = "192.168.1.208"
         self._user: str = "postgres"
         self._password: str = "2437"
         self._port: str = "5432"
@@ -23,7 +23,11 @@ class PersistanceLayer:
     def _getConnection(self) -> psycopg2.extensions.connection:
         """Get the connection object to Postgresql"""
         return psycopg2.connect(
-            database=self._db_path, user=self._user, password=self._password
+            database=self._db_path,
+            user=self._user,
+            password=self._password,
+            host=self._host,
+            port=self._port,
         )
 
     def addToSql(self, email_instance=None) -> None:
