@@ -15,7 +15,7 @@ class PersistanceLayer:
         self._barcode: str = barcode
         self._amount: int = amount
         self._db_path: str = "thirst-track"
-        self._host: str = "192.168.1.208"
+        self._host: str = "192.168.1.7"
         self._user: str = "postgres"
         self._password: str = "2437"
         self._port: str = "5432"
