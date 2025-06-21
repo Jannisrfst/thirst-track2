@@ -1,0 +1,30 @@
+
+
+ARG NODE_VERSION=20.11.1
+FROM node:${NODE_VERSION}-alpine as base
+
+# Set working directory
+WORKDIR /app
+
+# Create non-privileged user
+ARG UID=10001
+RUN addgroup -g "${UID}" -S appgroup && \
+    adduser -S -u "${UID}" -G appgroup appuser
+
+# Install dependencies (leverage Docker cache)
+RUN --mount=type=bind,source=package.json,target=package.json \
+    --mount=type=bind,source=package-lock.json,target=package-lock.json \
+    --mount=type=cache,target=/root/.npm \
+    npm ci --omit=dev
+
+# Switch to non-privileged user
+USER appuser
+
+# Copy source code
+COPY . .
+
+# Expose port
+EXPOSE 3001
+
+# Start development server
+CMD ["npm", "start"]

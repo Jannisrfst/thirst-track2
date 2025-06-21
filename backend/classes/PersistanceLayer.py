@@ -1,6 +1,11 @@
 import requests
 from typing import Optional, List, Dict, Any
 import psycopg2
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 
 class PersistanceLayer:
@@ -14,11 +19,11 @@ class PersistanceLayer:
         """
         self._barcode: str = barcode
         self._amount: int = amount
-        self._db_path: str = "thirst-track"
-        self._host: str = "192.168.1.7"
-        self._user: str = "postgres"
-        self._password: str = "2437"
-        self._port: str = "5432"
+        self._db_path: str = os.getenv("DB_NAME")
+        self._host: str = os.getenv("DB_HOST")
+        self._user: str = os.getenv("DB_USER")
+        self._password: str = os.getenv("DB_PASSWORD")
+        self._port: str = os.getenv("DB_PORT")
 
     def _getConnection(self) -> psycopg2.extensions.connection:
         """Get the connection object to Postgresql"""
@@ -36,7 +41,7 @@ class PersistanceLayer:
         cur = con.cursor()
         cur.execute("INSERT INTO entries (barcode) VALUES(%s)", (self._barcode,))
         con.commit()
-
+        con.close()
         if email_instance:
             self._trigger_polling(email_instance)
 
@@ -63,6 +68,7 @@ class PersistanceLayer:
             (self._barcode, self._amount),
         )
         con.commit()
+        con.close()
 
         if email_instance:
             self._trigger_polling(email_instance)
@@ -92,7 +98,7 @@ class PersistanceLayer:
                 ORDER BY count DESC
             """)
             result = cur.fetchall()
-
+            
             # Convert to list of dicts
             return [{"barcode": row[0], "count": row[1]} for row in result]
         except Exception as e:

@@ -1,29 +1,33 @@
 from flask import Flask, jsonify, Blueprint, request
 from flask_cors import CORS
-from edev import releaseDeviceAsync
+from backend.edev import releaseDeviceAsync
 from classes.PersistanceLayer import PersistanceLayer
 from classes.User import User
 import threading
 import atexit
 import asyncio
 from typing import Optional
-from mail import Email
+from backend.mail import Email
 import requests
 import json
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
 
-# Enable CORS, important to change after development
 CORS(app, supports_credentials=True, origins="*", allow_headers=["Content-Type"])
 
 # Blueprint api routing /api
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 email = Email(
-    host="smtp.gmail.com",
-    port=587,
-    from_email="jannis.reufsteck1@gmail.com",
-    to_email="jannis.reufsteck1@gmail.com",
-    password="cijy tpmv wigq yplb",
+    host=os.getenv("EMAIL_HOST"),
+    port=int(os.getenv("EMAIL_PORT")),
+    from_email=os.getenv("EMAIL_FROM"),
+    to_email=os.getenv("EMAIL_TO"),
+    password=os.getenv("EMAIL_PASSWORD"),
 )
 
 
@@ -59,7 +63,7 @@ def add_entries():
 @api_bp.route("/entries")
 def inventory():
     try:
-        # Using a generic PersistanceLayer instance to retrieve inventory data
+        # may be using singleton in the future
         persistance = PersistanceLayer(
             "", 0
         )  # Empty barcode and 0 amount for inventory retrieval
@@ -83,7 +87,6 @@ def decrement_entries():
         # Create a PersistanceLayer instance
         persistance = PersistanceLayer(barcode, int(quantity))
 
-        # Decrement the specified quantity
         persistance.decrementFromSql(email)
 
         return jsonify(
@@ -118,12 +121,12 @@ async def scannerProcessing() -> None:
 
 
 async def makeDecrementApiCall(barcode: str, quantity: int) -> None:
-    """Make HTTP POST request to /api/decrement endpoint"""
+    """Make HTTP POST request to /api/decrement endpoint used for decrementing with barcode scanner"""
     try:
         payload = {"barcode": barcode, "quantity": quantity}
 
         response = requests.post(
-            "http://localhost:5001/api/decrement",
+            f"{os.getenv('API_BASE_URL')}/api/decrement",
             headers={"Content-Type": "application/json"},
             json=payload,
             timeout=5,
@@ -180,11 +183,11 @@ def decrementByNumber(number: int) -> None:
 
 def send_mail():
     mail = Email(
-        "smtp.gmail.com",
-        587,
-        "jannis.reufsteck1@gmail.com",
-        "jannis.reufsteck1@gmail.com",
-        "cijy tpmv wigq yplb",
+        os.getenv("EMAIL_HOST"),
+        int(os.getenv("EMAIL_PORT")),
+        os.getenv("EMAIL_FROM"),
+        os.getenv("EMAIL_TO"),
+        os.getenv("EMAIL_PASSWORD"),
     )
     mail.send_email(mail.create_email())
 

@@ -1,4 +1,0 @@
-Requirements:
-abrufen des count jedes number entries in der db
-invoken der send_email methode der email klasse wenn eine "nummer" einen count von 5 erreicht hat
-jede  minute wird gepolled

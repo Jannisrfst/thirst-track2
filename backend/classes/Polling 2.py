@@ -1,6 +1,6 @@
 import threading
 from classes.PersistanceLayer import PersistanceLayer
-from mail import Email
+from backend.mail import Email
 
 
 class Polling:
