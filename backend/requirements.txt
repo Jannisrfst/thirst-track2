@@ -1,3 +1,4 @@
+flask
 contourpy==1.3.2
 cycler==0.12.1
 fonttools==4.57.0
@@ -9,6 +10,6 @@ pillow==11.2.1
 pyparsing==3.2.3
 python-dateutil==2.9.0.post0
 six==1.17.0
-wheel @ file:///opt/homebrew/Cellar/python%403.13/3.13.2/libexec/wheel-0.45.1-py3-none-any.whl#sha256=b9235939e2096903717cb6bfc132267f8a7e46deb2ec3ef9c5e234ea301795d0
-psycopg2
+wheel
+psycopg2-binary
 python-dotenv
