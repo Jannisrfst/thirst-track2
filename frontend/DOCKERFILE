@@ -18,10 +18,13 @@ RUN --mount=type=bind,source=package.json,target=package.json \
   npm ci --omit=dev
 
 # Switch to non-privileged user
-USER appuser
+USER root
 
 # Copy source code
 COPY . .
+USER root 
+RUN npm i
+USER root
 
 # Expose port
 EXPOSE 3000
