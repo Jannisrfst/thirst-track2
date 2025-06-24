@@ -1,4 +1,4 @@
-from backend.edev import extractDigitsFromKeycodes, buildString, getKeycodeAsync
+from edev import extractDigitsFromKeycodes, buildString, getKeycodeAsync
 from classes.PersistanceLayer import PersistanceLayer
 from typing import Optional
 

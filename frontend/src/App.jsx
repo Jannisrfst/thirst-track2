@@ -2,6 +2,7 @@ import React from 'react';
 import './styles/style.css';
 import { ThirstTrackHeader } from './components/Header';
 import { BarcodeScanner } from './components/BarcodeEntries';
+import { CsvUploader } from './components/CsvUploader';
 import { InventoryList } from './components/InventoryList';
 import { ProductDetails } from './components/ProductDetails';
 import { BarcodeProvider } from './context/BarcodeContext';
@@ -15,6 +16,7 @@ function App() {
         <div className="panelsContainer">
           <section className="leftPanel">
             <BarcodeScanner />
+            <CsvUploader />
             <InventoryList />
           </section>
           <section className="rightPanel">

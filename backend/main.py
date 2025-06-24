@@ -1,17 +1,18 @@
 from flask import Flask, jsonify, Blueprint, request
 from flask_cors import CORS
-from backend.edev import releaseDeviceAsync
+from edev import releaseDeviceAsync
 from classes.PersistanceLayer import PersistanceLayer
 from classes.User import User
 import threading
 import atexit
 import asyncio
 from typing import Optional
-from backend.mail import Email
+from mail import Email
 import requests
 import json
 import os
 from dotenv import load_dotenv
+from classes.CsvValidator import CsvValidator
 
 # Load environment variables
 load_dotenv()
@@ -29,6 +30,81 @@ email = Email(
     to_email=os.getenv("EMAIL_TO"),
     password=os.getenv("EMAIL_PASSWORD"),
 )
+
+
+@api_bp.route("/add-csv", methods=["POST"])
+def add_csv_entries():
+    try:
+        if "file" not in request.files:
+            return jsonify({"status": "error", "message": "No file uploaded"}), 400
+
+        file = request.files["file"]
+        if file.filename == "":
+            return jsonify({"status": "error", "message": "No file selected"}), 400
+
+        if not file.filename.endswith(".csv"):
+            return jsonify(
+                {"status": "error", "message": "Only CSV files are allowed"}
+            ), 400
+
+        # Read file content
+        csv_content = file.read().decode("utf-8")
+
+        # Validate CSV content
+        validator = CsvValidator()
+        is_valid, valid_rows, errors = validator.validate_csv_content(csv_content)
+
+        if not is_valid:
+            return jsonify(
+                {
+                    "status": "error",
+                    "message": "CSV validation failed",
+                    "errors": errors,
+                }
+            ), 400
+
+        # Process valid rows
+        success_count = 0
+        failed_entries = []
+
+        for row in valid_rows:
+            try:
+                barcode = row["barcode"]
+                quantity = row["quantity"]
+
+                # Create PersistanceLayer instance and add entries
+                persistance = PersistanceLayer(barcode, 1)
+
+                # Insert 'quantity' number of rows
+                for i in range(quantity):
+                    persistance.addToSql(email)
+                    success_count += 1
+
+            except Exception as e:
+                failed_entries.append(
+                    {
+                        "barcode": row["barcode"],
+                        "quantity": row["quantity"],
+                        "error": str(e),
+                    }
+                )
+
+        # Prepare response
+        response_data = {
+            "status": "success",
+            "message": f"Successfully processed {success_count} entries from CSV",
+            "processed_entries": len(valid_rows),
+            "success_count": success_count,
+        }
+
+        if failed_entries:
+            response_data["failed_entries"] = failed_entries
+            response_data["message"] += f" ({len(failed_entries)} entries failed)"
+
+        return jsonify(response_data), 200
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 @api_bp.route("/add", methods=["POST"])
