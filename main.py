@@ -12,13 +12,8 @@ import requests
 import json
 import os
 from dotenv import load_dotenv
-try:
-    from classes.CsvValidator import CsvValidator
-except ImportError:
-    import sys
-    import os
-    sys.path.append(os.path.join(os.path.dirname(__file__), 'backend', 'classes'))
-    from CsvValidator import CsvValidator
+from classes.CsvValidator import CsvValidator
+
 
 # Load environment variables
 load_dotenv()
@@ -208,7 +203,7 @@ async def makeDecrementApiCall(barcode: str, quantity: int) -> None:
         payload = {"barcode": barcode, "quantity": quantity}
 
         response = requests.post(
-            "http://localhost:5001/api/decrement",
+            "http://127.0.0.1:5001/api/decrement",
             headers={"Content-Type": "application/json"},
             json=payload,
             timeout=5,

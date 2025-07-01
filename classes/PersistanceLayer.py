@@ -1,6 +1,12 @@
 import sqlite3
 import requests
 from typing import Optional, List, Dict, Any
+import psycopg2
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 
 class PersistanceLayer:
@@ -14,20 +20,30 @@ class PersistanceLayer:
         """
         self._barcode: str = barcode
         self._amount: int = amount
-        self._db_path: str = "getraenke.sqlite3"
+        self._db_path: str = os.getenv("DB_NAME", "thirst-track")
+        self._host: str = os.getenv("DB_HOST", "192.168.1.208")
+        self._user: str = os.getenv("DB_USER", "postgres")
+        self._password: str = os.getenv("DB_PASSWORD", "2437")
+        self._port: str = os.getenv("DB_PORT", "5432")
 
-
-    def _getConnection(self) -> sqlite3.Connection:
-        """Get a connection to the SQLite database."""
-        return sqlite3.connect(self._db_path)
+    def _getConnection(self) -> psycopg2.extensions.connection:
+        """Get the connection object to Postgresql"""
+        return psycopg2.connect(
+            database=self._db_path,
+            user=self._user,
+            password=self._password,
+            host=self._host,
+            port=self._port
+        )
 
     def addToSql(self, email_instance=None) -> None:
         """Add the barcode to the database."""
         con = self._getConnection()
         cur = con.cursor()
-        cur.execute("INSERT INTO Entries (number) VALUES(?)", (self._barcode,))
+        cur.execute("INSERT INTO entries (barcode) VALUES(%s)", (self._barcode,))
         con.commit()
-        
+        con.close()
+
         if email_instance:
             self._trigger_polling(email_instance)
 
@@ -35,28 +51,35 @@ class PersistanceLayer:
         """Decrement the count of this barcode in the database."""
         con = self._getConnection()
         cur = con.cursor()
-        
-        # First check current count
-        cur.execute("SELECT COUNT(*) FROM Entries WHERE number = ?", (self._barcode,))
+
+        cur.execute("SELECT COUNT(*) FROM entries WHERE barcode = %s", (self._barcode,))
         current_count = cur.fetchone()[0]
-        
+
         if current_count < self._amount:
-            raise ValueError(f"Cannot decrement {self._amount} items. Only {current_count} available.")
-        
-        # Delete the specified number of entries using rowid
-        cur.execute("""
-            DELETE FROM Entries WHERE rowid IN (
-                SELECT rowid FROM Entries WHERE number = ? LIMIT ?
+            con.close()
+            raise ValueError(
+                f"Cannot decrement {self._amount} items. Only {current_count} available."
             )
-        """, (self._barcode, self._amount))
+
+        # Delete the specified number of entries using id
+        cur.execute(
+            """
+            DELETE FROM entries WHERE id IN (
+                SELECT id FROM entries WHERE barcode = %s LIMIT %s
+            )
+        """,
+            (self._barcode, self._amount),
+        )
         con.commit()
-        
+        con.close()
+
         if email_instance:
             self._trigger_polling(email_instance)
 
     def _trigger_polling(self, email_instance) -> None:
         """Trigger polling check after database changes."""
         from classes.Polling import run_polling
+
         run_polling(email_instance)
 
     def getInventory(self) -> List[Dict[str, Any]]:
@@ -72,9 +95,9 @@ class PersistanceLayer:
 
             # Get count of each barcode
             cur.execute("""
-                SELECT number, COUNT(*) as count
-                FROM Entries
-                GROUP BY number
+                SELECT barcode, COUNT(*) as count
+                FROM entries
+                GROUP BY barcode
                 ORDER BY count DESC
             """)
             result = cur.fetchall()

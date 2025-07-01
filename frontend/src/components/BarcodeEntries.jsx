@@ -20,7 +20,7 @@ export const BarcodeScanner = () => {
     setStatus({ message: '', isError: false });
 
     try {
-      const response = await fetch(`http://localhost:5001/api/${endpoint}`, {
+      const response = await fetch(`/api/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
