@@ -12,7 +12,13 @@ import requests
 import json
 import os
 from dotenv import load_dotenv
-from classes.CsvValidator import CsvValidator
+try:
+    from classes.CsvValidator import CsvValidator
+except ImportError:
+    import sys
+    import os
+    sys.path.append(os.path.join(os.path.dirname(__file__), 'backend', 'classes'))
+    from CsvValidator import CsvValidator
 
 # Load environment variables
 load_dotenv()
