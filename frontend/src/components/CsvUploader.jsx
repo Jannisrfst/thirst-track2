@@ -36,13 +36,17 @@ export const CsvUploader = () => {
     setResults(null);
 
     try {
+      console.log('Starting CSV upload for file:', file.name);
       const formData = new FormData();
       formData.append('file', file);
 
+      console.log('Sending request to /api/add-csv');
       const response = await fetch('/api/add-csv', {
         method: 'POST',
         body: formData,
       });
+      
+      console.log('Response status:', response.status, response.statusText);
 
       const result = await response.json();
 
@@ -68,7 +72,15 @@ export const CsvUploader = () => {
       }
 
     } catch (error) {
-      setStatus({ message: error.message, isError: true });
+      console.error('CSV upload error:', error);
+      
+      // More detailed error handling
+      let errorMessage = error.message;
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        errorMessage = 'Cannot connect to server. Please check if the backend is running.';
+      }
+      
+      setStatus({ message: errorMessage, isError: true });
       
       // Handle validation errors
       if (error.message.includes('CSV validation failed')) {

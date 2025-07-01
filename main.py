@@ -105,7 +105,9 @@ def decrement_entries():
 
 @api_bp.route("/add-csv", methods=["POST"])
 def add_csv_entries():
+    print("CSV upload endpoint hit!")
     try:
+        print(f"Request files: {list(request.files.keys())}")
         if "file" not in request.files:
             return jsonify({"status": "error", "message": "No file uploaded"}), 400
 
