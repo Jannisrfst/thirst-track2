@@ -120,10 +120,15 @@ def add_csv_entries():
 
         # Read and validate CSV content
         csv_content = file.read().decode("utf-8")
+        print(f"CSV content received: {csv_content[:200]}...")  # First 200 chars
+        
         validator = CsvValidator()
         is_valid, valid_rows, errors = validator.validate_csv_content(csv_content)
+        
+        print(f"Validation result - Valid: {is_valid}, Errors: {errors}, Rows: {len(valid_rows)}")
 
         if not is_valid:
+            print(f"CSV validation failed with errors: {errors}")
             return jsonify(
                 {
                     "status": "error",

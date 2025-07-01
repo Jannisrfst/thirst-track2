@@ -49,8 +49,13 @@ export const CsvUploader = () => {
       console.log('Response status:', response.status, response.statusText);
 
       const result = await response.json();
+      console.log('Server response:', result);
 
       if (!response.ok) {
+        // Handle validation errors specially
+        if (result.errors) {
+          setResults({ errors: result.errors });
+        }
         throw new Error(result.message || 'Upload failed');
       }
 
@@ -81,18 +86,6 @@ export const CsvUploader = () => {
       }
       
       setStatus({ message: errorMessage, isError: true });
-      
-      // Handle validation errors
-      if (error.message.includes('CSV validation failed')) {
-        try {
-          const errorResponse = await error.response?.json();
-          if (errorResponse?.errors) {
-            setResults({ errors: errorResponse.errors });
-          }
-        } catch (e) {
-          // Ignore parsing errors
-        }
-      }
     } finally {
       setUploading(false);
     }
