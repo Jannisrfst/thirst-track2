@@ -26,11 +26,11 @@ CORS(app, supports_credentials=True, origins="*", allow_headers=["Content-Type"]
 # Blueprint api routing /api
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 email = Email(
-    host=os.getenv("EMAIL_HOST"),
-    port=int(os.getenv("EMAIL_PORT")),
-    from_email=os.getenv("EMAIL_FROM"),
-    to_email=os.getenv("EMAIL_TO"),
-    password=os.getenv("EMAIL_PASSWORD"),
+    host="smtp.gmail.com",
+    port="587",
+    from_email="jannis.reufsteck1@gmail.com",
+    to_email="jannis.reufsteck1@gmail.com",
+    password="trnb etzz kexu vvay",
 )
 
 
