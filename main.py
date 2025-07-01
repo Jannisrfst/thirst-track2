@@ -10,6 +10,12 @@ from typing import Optional
 from mail import Email
 import requests
 import json
+import os
+from dotenv import load_dotenv
+from classes.CsvValidator import CsvValidator
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -19,11 +25,11 @@ CORS(app, supports_credentials=True, origins="*", allow_headers=["Content-Type"]
 # Blueprint api routing /api
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 email = Email(
-    host="smtp.gmail.com",
-    port=587,
-    from_email="jannis.reufsteck1@gmail.com",
-    to_email="jannis.reufsteck1@gmail.com",
-    password="cijy tpmv wigq yplb",
+    host=os.getenv("EMAIL_HOST"),
+    port=int(os.getenv("EMAIL_PORT")),
+    from_email=os.getenv("EMAIL_FROM"),
+    to_email=os.getenv("EMAIL_TO"),
+    password=os.getenv("EMAIL_PASSWORD"),
 )
 
 
@@ -92,6 +98,79 @@ def decrement_entries():
                 "message": f"Decremented {quantity} entries with barcode {barcode}",
             }
         ), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@api_bp.route("/add-csv", methods=["POST"])
+def add_csv_entries():
+    try:
+        if "file" not in request.files:
+            return jsonify({"status": "error", "message": "No file uploaded"}), 400
+
+        file = request.files["file"]
+        if file.filename == "":
+            return jsonify({"status": "error", "message": "No file selected"}), 400
+
+        if not file.filename.lower().endswith(".csv"):
+            return jsonify({"status": "error", "message": "File must be a CSV"}), 400
+
+        # Read and validate CSV content
+        csv_content = file.read().decode("utf-8")
+        validator = CsvValidator()
+        is_valid, valid_rows, errors = validator.validate_csv_content(csv_content)
+
+        if not is_valid:
+            return jsonify(
+                {
+                    "status": "error",
+                    "message": "CSV validation failed",
+                    "errors": errors,
+                }
+            ), 400
+
+        # Process valid rows
+        success_count = 0
+        failed_entries = []
+
+        for row in valid_rows:
+            try:
+                barcode = row["barcode"]
+                quantity = row["quantity"]
+
+                # Create a PersistanceLayer instance and add entries
+                persistance = PersistanceLayer(barcode, quantity)
+
+                # Insert 'quantity' rows for each entry
+                for i in range(quantity):
+                    persistance.addToSql(email)
+
+                success_count += quantity
+
+            except Exception as e:
+                failed_entries.append(
+                    {
+                        "barcode": row["barcode"],
+                        "quantity": row["quantity"],
+                        "error": str(e),
+                    }
+                )
+
+        # Prepare response
+        if failed_entries:
+            message = f"Partially successful: {success_count} entries added, {len(failed_entries)} failed"
+        else:
+            message = f"Successfully added {success_count} entries from CSV"
+
+        return jsonify(
+            {
+                "status": "success",
+                "message": message,
+                "success_count": success_count,
+                "failed_entries": failed_entries,
+            }
+        ), 200
+
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 

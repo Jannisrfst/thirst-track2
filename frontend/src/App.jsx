@@ -4,6 +4,7 @@ import { ThirstTrackHeader } from './components/Header';
 import { BarcodeScanner } from './components/BarcodeEntries';
 import { InventoryList } from './components/InventoryList';
 import { ProductDetails } from './components/ProductDetails';
+import { CsvUploader } from './components/CsvUploader';
 import { BarcodeProvider } from './context/BarcodeContext';
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
         <div className="panelsContainer">
           <section className="leftPanel">
             <BarcodeScanner />
+            <CsvUploader />
             <InventoryList />
           </section>
           <section className="rightPanel">
