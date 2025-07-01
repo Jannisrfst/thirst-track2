@@ -21,7 +21,7 @@ class PersistanceLayer:
         self._barcode: str = barcode
         self._amount: int = amount
         self._db_path: str = os.getenv("DB_NAME", "thirst-track")
-        self._host: str = os.getenv("DB_HOST", "192.168.1.208")
+        self._host: str = os.getenv("DB_HOST", "192.168.1.114")
         self._user: str = os.getenv("DB_USER", "postgres")
         self._password: str = os.getenv("DB_PASSWORD", "2437")
         self._port: str = os.getenv("DB_PORT", "5432")
