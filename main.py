@@ -27,7 +27,7 @@ CORS(app, supports_credentials=True, origins="*", allow_headers=["Content-Type"]
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 email = Email(
     host="smtp.gmail.com",
-    port="587",
+    port=587,
     from_email="jannis.reufsteck1@gmail.com",
     to_email="jannis.reufsteck1@gmail.com",
     password="trnb etzz kexu vvay",
