@@ -22,7 +22,7 @@ class PersistanceLayer:
         self._amount: int = amount
         self._db_path: str = os.getenv("DB_NAME", "thirst-track")
         self._host: str = os.getenv("DB_HOST", "192.168.1.114")
-        self._user: str = os.getenv("DB_USER", "postgres")
+        self._user: str = os.getenv("DB_USER", "tmp")
         self._password: str = os.getenv("DB_PASSWORD", "postgres")
         self._port: str = os.getenv("DB_PORT", "5432")
 # 
