@@ -47,6 +47,29 @@ class PersistanceLayer:
         if email_instance:
             self._trigger_polling(email_instance)
 
+    def addBulkToSql(self, barcode_quantity_pairs, email_instance=None) -> None:
+        """Add multiple barcode entries in a single bulk operation.
+        
+        Args:
+            barcode_quantity_pairs: List of tuples (barcode, quantity)
+            email_instance: Optional email instance for polling trigger
+        """
+        con = self._getConnection()
+        cur = con.cursor()
+        
+        # Prepare data for bulk insert - create one row per quantity unit
+        data = []
+        for barcode, quantity in barcode_quantity_pairs:
+            data.extend([(barcode,)] * quantity)
+        
+        # Single bulk insert operation
+        cur.executemany("INSERT INTO entries (barcode) VALUES (%s)", data)
+        con.commit()
+        con.close()
+
+        if email_instance:
+            self._trigger_polling(email_instance)
+
     def decrementFromSql(self, email_instance=None) -> None:
         """Decrement the count of this barcode in the database."""
         con = self._getConnection()

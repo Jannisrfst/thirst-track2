@@ -10,6 +10,7 @@ export const InventoryList = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [message, setMessage] = useState(null);
   const [decrementLoading, setDecrementLoading] = useState(false);
+  const [decrementQuantity, setDecrementQuantity] = useState(1);
   const { setActiveBarcode } = useBarcode();
 
   const fetchInventory = async () => {
@@ -129,6 +130,7 @@ export const InventoryList = () => {
                 const newSelectedItem = selectedItem === item ? null : item;
                 setSelectedItem(newSelectedItem);
                 setActiveBarcode(newSelectedItem ? newSelectedItem.barcode : '');
+                setDecrementQuantity(1); // Reset quantity when selecting new item
               }}
             >
               <div className="inventory-cell">{item.barcode}</div>
@@ -160,19 +162,32 @@ export const InventoryList = () => {
             <span className="inventory-details-label">Quantity:</span>
             <span className="inventory-details-value">{selectedItem.count}</span>
           </div>
+          <div className="inventory-details-row">
+            <span className="inventory-details-label">Decrement by:</span>
+            <input
+              type="number"
+              min="1"
+              max={selectedItem.count}
+              value={decrementQuantity}
+              onChange={(e) => setDecrementQuantity(parseInt(e.target.value) || 1)}
+              className="inventory-quantity-input"
+              disabled={decrementLoading}
+            />
+          </div>
           <div className="inventory-action-buttons">
             <button 
               className="inventory-button inventory-edit-button"
-              onClick={() => decrementItem(selectedItem.barcode)}
-              disabled={decrementLoading}
+              onClick={() => decrementItem(selectedItem.barcode, decrementQuantity)}
+              disabled={decrementLoading || decrementQuantity <= 0 || decrementQuantity > selectedItem.count}
             >
-              {decrementLoading ? 'Decrementing...' : 'Decrement'}
+              {decrementLoading ? 'Decrementing...' : `Decrement by ${decrementQuantity}`}
             </button>
             <button 
               className="inventory-button inventory-close-button"
               onClick={() => {
                 setSelectedItem(null);
                 setMessage(null);
+                setDecrementQuantity(1); // Reset quantity when closing
               }}
             >
               Close

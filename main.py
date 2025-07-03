@@ -137,32 +137,49 @@ def add_csv_entries():
                 }
             ), 400
 
-        # Process valid rows
+        # Process valid rows using bulk operations
         success_count = 0
         failed_entries = []
 
-        for row in valid_rows:
-            try:
-                barcode = row["barcode"]
-                quantity = row["quantity"]
+        try:
+            # Prepare data for bulk insert
+            barcode_quantity_pairs = [(row["barcode"], row["quantity"]) for row in valid_rows]
+            
+            # Create a PersistanceLayer instance for bulk operations
+            persistance = PersistanceLayer("", 0)  # Empty values for bulk operation
+            
+            # Single bulk insert operation
+            persistance.addBulkToSql(barcode_quantity_pairs, email)
+            
+            # Calculate success count
+            success_count = sum(row["quantity"] for row in valid_rows)
+            
+        except Exception as e:
+            # If bulk operation fails, fall back to individual processing
+            print(f"Bulk operation failed, falling back to individual processing: {e}")
+            
+            for row in valid_rows:
+                try:
+                    barcode = row["barcode"]
+                    quantity = row["quantity"]
 
-                # Create a PersistanceLayer instance and add entries
-                persistance = PersistanceLayer(barcode, quantity)
+                    # Create a PersistanceLayer instance and add entries
+                    persistance = PersistanceLayer(barcode, quantity)
 
-                # Insert 'quantity' rows for each entry
-                for i in range(quantity):
-                    persistance.addToSql(email)
+                    # Insert 'quantity' rows for each entry
+                    for i in range(quantity):
+                        persistance.addToSql(email)
 
-                success_count += quantity
+                    success_count += quantity
 
-            except Exception as e:
-                failed_entries.append(
-                    {
-                        "barcode": row["barcode"],
-                        "quantity": row["quantity"],
-                        "error": str(e),
-                    }
-                )
+                except Exception as e:
+                    failed_entries.append(
+                        {
+                            "barcode": row["barcode"],
+                            "quantity": row["quantity"],
+                            "error": str(e),
+                        }
+                    )
 
         # Prepare response
         if failed_entries:
