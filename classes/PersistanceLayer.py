@@ -23,7 +23,7 @@ class PersistanceLayer:
         self._db_path: str = os.getenv("DB_NAME", "thirst-track")
         self._host: str = os.getenv("DB_HOST", "192.168.1.114")
         self._user: str = os.getenv("DB_USER", "tmp")
-        self._password: str = os.getenv("DB_PASSWORD", "postgres")
+        self._password: str = os.getenv("DB_PASSWORD", "2437")
         self._port: str = os.getenv("DB_PORT", "5432")
 # 
     def _getConnection(self) -> psycopg2.extensions.connection:
