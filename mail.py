@@ -7,11 +7,11 @@ class Email:
     def __init__(
         self, host: str, port: int, from_email: str, to_email: str, password: str
     ):
-        self._host = host
-        self._port = port
-        self._from_email = from_email
-        self._to_email = to_email
-        self._password = password
+        self._host = "smtp.gmail.com"
+        self._port = 587
+        self._from_email = "jannis.reufsteck1@gmail.com"
+        self._to_email = "jannis.reufsteck1@gmail.com"
+        self._password = "trnb etzz kexu vvay"
 
     def get_inventory(self) -> List[Dict[str, int]]:
         """
