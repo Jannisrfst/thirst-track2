@@ -1,4 +1,3 @@
-import sqlite3
 import requests
 from typing import Optional, List, Dict, Any
 import psycopg2
