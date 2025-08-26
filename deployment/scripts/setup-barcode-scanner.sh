@@ -38,16 +38,16 @@ print_status "Installing input device packages..."
 apt update
 apt install -y python3-evdev udev
 
-# Add pi user to input group for device access
-print_status "Adding pi user to input group..."
-usermod -a -G input pi
+# Add jannisreufsteck user to input group for device access
+print_status "Adding jannisreufsteck user to input group..."
+usermod -a -G input jannisreufsteck
 
 # Create udev rules for barcode scanner
 print_status "Creating udev rules for barcode scanner..."
 
 cat > /etc/udev/rules.d/99-barcode-scanner.rules << 'EOF'
 # Barcode Scanner udev rules
-# This allows the pi user to access input devices
+# This allows the jannisreufsteck user to access input devices
 
 # Generic USB HID devices (most barcode scanners)
 SUBSYSTEM=="input", GROUP="input", MODE="0664"
