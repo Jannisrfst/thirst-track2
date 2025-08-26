@@ -77,22 +77,40 @@ sudo -u postgres psql -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';" 2>
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;"
 sudo -u postgres psql -c "ALTER USER $DB_USER CREATEDB;"
 
-# Create the entries table
-print_status "Creating database schema..."
+# Create the entries table (only if it doesn't exist)
+print_status "Checking/creating database schema..."
+
+# Check if entries table already exists
+if sudo -u postgres psql -d $DB_NAME -t -c "SELECT 1 FROM information_schema.tables WHERE table_name='entries'" | grep -q 1; then
+    print_status "Table 'entries' already exists - using existing table"
+else
+    print_status "Creating new 'entries' table..."
+    sudo -u postgres psql -d $DB_NAME -c "
+    CREATE TABLE entries (
+        id SERIAL PRIMARY KEY,
+        barcode VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX idx_entries_barcode ON entries(barcode);
+    CREATE INDEX idx_entries_created_at ON entries(created_at);
+    "
+    print_status "Table 'entries' created successfully"
+fi
+
+# Grant table permissions (for all existing tables and sequences)
+print_status "Granting permissions on database objects..."
 sudo -u postgres psql -d $DB_NAME -c "
-CREATE TABLE IF NOT EXISTS entries (
-    id SERIAL PRIMARY KEY,
-    barcode VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- Grant permissions on all existing tables
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO $DB_USER;
 
-CREATE INDEX IF NOT EXISTS idx_entries_barcode ON entries(barcode);
-CREATE INDEX IF NOT EXISTS idx_entries_created_at ON entries(created_at);
+-- Grant permissions on all existing sequences
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO $DB_USER;
+
+-- Grant default privileges for future objects
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO $DB_USER;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO $DB_USER;
 "
-
-# Grant table permissions
-sudo -u postgres psql -d $DB_NAME -c "GRANT ALL PRIVILEGES ON TABLE entries TO $DB_USER;"
-sudo -u postgres psql -d $DB_NAME -c "GRANT USAGE, SELECT ON SEQUENCE entries_id_seq TO $DB_USER;"
 
 # Configure PostgreSQL for local connections
 print_status "Configuring PostgreSQL authentication..."
