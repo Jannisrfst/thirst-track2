@@ -115,15 +115,25 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO $DB_USER;
 # Configure PostgreSQL for local connections
 print_status "Configuring PostgreSQL authentication..."
 
-# Backup original pg_hba.conf
-cp /etc/postgresql/*/main/pg_hba.conf /etc/postgresql/*/main/pg_hba.conf.backup
-
-# Update pg_hba.conf to allow local connections
+# Find and backup original pg_hba.conf
 PG_HBA_FILE=$(find /etc/postgresql -name pg_hba.conf | head -1)
 if [ -f "$PG_HBA_FILE" ]; then
-    # Add local connection for our user
-    echo "local   $DB_NAME   $DB_USER   md5" >> "$PG_HBA_FILE"
-    print_status "Updated pg_hba.conf for local connections"
+    # Create backup if it doesn't exist
+    if [ ! -f "$PG_HBA_FILE.backup" ]; then
+        print_status "Creating backup of pg_hba.conf..."
+        cp "$PG_HBA_FILE" "$PG_HBA_FILE.backup"
+    else
+        print_status "Backup of pg_hba.conf already exists"
+    fi
+
+    # Check if our user entry already exists
+    if grep -q "local.*$DB_NAME.*$DB_USER" "$PG_HBA_FILE"; then
+        print_status "Database user entry already exists in pg_hba.conf"
+    else
+        print_status "Adding database user entry to pg_hba.conf..."
+        echo "local   $DB_NAME   $DB_USER   md5" >> "$PG_HBA_FILE"
+        print_status "Updated pg_hba.conf for local connections"
+    fi
 else
     print_warning "Could not find pg_hba.conf file"
 fi
@@ -133,8 +143,13 @@ print_status "Optimizing PostgreSQL configuration for Raspberry Pi..."
 
 PG_CONF_FILE=$(find /etc/postgresql -name postgresql.conf | head -1)
 if [ -f "$PG_CONF_FILE" ]; then
-    # Backup original config
-    cp "$PG_CONF_FILE" "$PG_CONF_FILE.backup"
+    # Backup original config if backup doesn't exist
+    if [ ! -f "$PG_CONF_FILE.backup" ]; then
+        print_status "Creating backup of postgresql.conf..."
+        cp "$PG_CONF_FILE" "$PG_CONF_FILE.backup"
+    else
+        print_status "Backup of postgresql.conf already exists"
+    fi
     
     # Optimize for Raspberry Pi (limited resources)
     cat >> "$PG_CONF_FILE" << EOF
