@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# USB Barcode Scanner Setup Script
-# This script configures USB barcode scanner access and permissions
+# USB and Bluetooth Barcode Scanner Setup Script
+# This script configures USB and Bluetooth barcode scanner access and permissions
 
 set -e
 
@@ -12,7 +12,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}=== USB Barcode Scanner Setup ===${NC}"
+echo -e "${BLUE}=== USB and Bluetooth Barcode Scanner Setup ===${NC}"
 
 # Function to print status
 print_status() {
@@ -33,27 +33,39 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-# Install required packages for input device handling
-print_status "Installing input device packages..."
+# Install required packages for input device handling and Bluetooth
+print_status "Installing input device and Bluetooth packages..."
 apt update
-apt install -y python3-evdev udev
+apt install -y python3-evdev udev bluetooth bluez bluez-tools rfkill
 
 # Add jannisreufsteck user to input group for device access
 print_status "Adding jannisreufsteck user to input group..."
 usermod -a -G input jannisreufsteck
 
-# Create udev rules for barcode scanner
-print_status "Creating udev rules for barcode scanner..."
+# Enable and start Bluetooth service
+print_status "Configuring Bluetooth service..."
+systemctl enable bluetooth
+systemctl start bluetooth
+
+# Ensure Bluetooth is not blocked
+rfkill unblock bluetooth
+
+# Create udev rules for barcode scanner (USB and Bluetooth)
+print_status "Creating udev rules for USB and Bluetooth barcode scanners..."
 
 cat > /etc/udev/rules.d/99-barcode-scanner.rules << 'EOF'
 # Barcode Scanner udev rules
 # This allows the jannisreufsteck user to access input devices
 
-# Generic USB HID devices (most barcode scanners)
+# Generic input devices (USB and Bluetooth scanners)
 SUBSYSTEM=="input", GROUP="input", MODE="0664"
 KERNEL=="event*", SUBSYSTEM=="input", GROUP="input", MODE="0664"
 
-# Specific barcode scanner vendors (add more as needed)
+# Bluetooth HID devices
+SUBSYSTEM=="input", ATTRS{name}=="*Bluetooth*", GROUP="input", MODE="0664", TAG+="uaccess"
+SUBSYSTEM=="input", ATTRS{phys}=="*bluetooth*", GROUP="input", MODE="0664", TAG+="uaccess"
+
+# Specific USB barcode scanner vendors (add more as needed)
 # Honeywell scanners
 ATTRS{idVendor}=="0c2e", SUBSYSTEM=="input", GROUP="input", MODE="0664", TAG+="uaccess"
 
@@ -68,12 +80,70 @@ ATTRS{idVendor}=="1eab", SUBSYSTEM=="input", GROUP="input", MODE="0664", TAG+="u
 
 # Generic USB keyboard-like devices (many scanners emulate keyboards)
 ATTRS{bInterfaceClass}=="03", ATTRS{bInterfaceSubClass}=="01", ATTRS{bInterfaceProtocol}=="01", GROUP="input", MODE="0664", TAG+="uaccess"
+
+# Bluetooth HID keyboard devices (Bluetooth scanners often appear as keyboards)
+SUBSYSTEM=="input", ATTRS{name}=="*Keyboard*", ATTRS{phys}=="*bluetooth*", GROUP="input", MODE="0664", TAG+="uaccess"
+SUBSYSTEM=="input", ATTRS{name}=="*Scanner*", ATTRS{phys}=="*bluetooth*", GROUP="input", MODE="0664", TAG+="uaccess"
+SUBSYSTEM=="input", ATTRS{name}=="*Barcode*", ATTRS{phys}=="*bluetooth*", GROUP="input", MODE="0664", TAG+="uaccess"
 EOF
 
 # Reload udev rules
 print_status "Reloading udev rules..."
 udevadm control --reload-rules
 udevadm trigger
+
+# Create Bluetooth pairing helper script
+print_status "Creating Bluetooth pairing helper script..."
+
+cat > /home/jannisreufsteck/thirst-track2/deployment/scripts/pair-bluetooth-scanner.sh << 'EOF'
+#!/bin/bash
+
+# Bluetooth Scanner Pairing Script
+# This script helps pair Bluetooth barcode scanners
+
+# Colors for output
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+echo -e "${BLUE}=== Bluetooth Scanner Pairing ===${NC}"
+echo ""
+
+# Check if Bluetooth is available
+if ! command -v bluetoothctl > /dev/null; then
+    echo -e "${RED}Error: bluetoothctl not found. Install bluez package.${NC}"
+    exit 1
+fi
+
+# Check if Bluetooth service is running
+if ! systemctl is-active --quiet bluetooth; then
+    echo -e "${YELLOW}Starting Bluetooth service...${NC}"
+    sudo systemctl start bluetooth
+fi
+
+echo -e "${YELLOW}Instructions for pairing your Bluetooth barcode scanner:${NC}"
+echo "1. Put your scanner in pairing mode (usually hold power + scan button)"
+echo "2. Wait for the scanner to appear in the scan results"
+echo "3. Note the MAC address of your scanner"
+echo "4. Follow the prompts to pair and connect"
+echo ""
+
+echo -e "${YELLOW}Starting Bluetooth scan...${NC}"
+echo "Press Ctrl+C to exit bluetoothctl when done"
+echo ""
+
+# Start bluetoothctl with automatic commands
+bluetoothctl << 'BTCTL_EOF'
+power on
+agent on
+default-agent
+scan on
+BTCTL_EOF
+EOF
+
+chmod +x /home/jannisreufsteck/thirst-track2/deployment/scripts/pair-bluetooth-scanner.sh
 
 # Create scanner detection script
 print_status "Creating scanner detection script..."
@@ -82,7 +152,7 @@ cat > /home/jannisreufsteck/thirst-track2/deployment/scripts/detect-scanner.sh <
 #!/bin/bash
 
 # Barcode Scanner Detection Script
-# This script helps identify connected barcode scanners
+# This script helps identify connected USB and Bluetooth barcode scanners
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -123,6 +193,34 @@ if command -v lsusb > /dev/null; then
     done
 else
     echo "  lsusb not available"
+fi
+
+echo ""
+
+# Check Bluetooth devices
+echo -e "${YELLOW}Bluetooth devices:${NC}"
+if command -v bluetoothctl > /dev/null; then
+    if systemctl is-active --quiet bluetooth; then
+        # Get paired devices
+        bluetoothctl paired-devices | while read line; do
+            if echo "$line" | grep -i -E "(scanner|barcode|honeywell|symbol|zebra|datalogic|code)" > /dev/null; then
+                echo -e "  ${GREEN}Bluetooth scanner:${NC} $line"
+            else
+                echo "  $line"
+            fi
+        done
+
+        # Check connected devices
+        echo ""
+        echo -e "${YELLOW}Connected Bluetooth devices:${NC}"
+        bluetoothctl info | grep -E "(Device|Name|Connected)" | while read line; do
+            echo "  $line"
+        done
+    else
+        echo "  Bluetooth service not running"
+    fi
+else
+    echo "  bluetoothctl not available"
 fi
 
 echo ""
@@ -178,9 +276,16 @@ echo ""
 # Test scanner functionality
 echo -e "${YELLOW}Scanner test:${NC}"
 echo "To test your barcode scanner:"
-echo "1. Make sure it's plugged in and powered on"
-echo "2. Run: python3 /home/jannisreufsteck/thirst-track2/deployment/scripts/test-scanner.py"
-echo "3. Scan a barcode when prompted"
+echo "USB Scanner:"
+echo "  1. Make sure it's plugged in and powered on"
+echo "  2. Run: python3 /home/jannisreufsteck/thirst-track2/deployment/scripts/test-scanner.py"
+echo "  3. Scan a barcode when prompted"
+echo ""
+echo "Bluetooth Scanner:"
+echo "  1. Make sure it's paired and connected"
+echo "  2. Run: /home/jannisreufsteck/thirst-track2/deployment/scripts/pair-bluetooth-scanner.sh (if not paired)"
+echo "  3. Run: python3 /home/jannisreufsteck/thirst-track2/deployment/scripts/test-scanner.py"
+echo "  4. Scan a barcode when prompted"
 echo ""
 
 # Show current configuration
@@ -188,7 +293,7 @@ echo -e "${YELLOW}Current configuration:${NC}"
 if [ -f "/home/jannisreufsteck/thirst-track2/.env" ]; then
     SCANNER_DEVICE=$(grep SCANNER_DEVICE_PATH /home/jannisreufsteck/thirst-track2/.env | cut -d'=' -f2)
     echo "  Configured device: $SCANNER_DEVICE"
-    
+
     if [ -e "$SCANNER_DEVICE" ]; then
         echo -e "  Device status: ${GREEN}✓ Available${NC}"
     else
@@ -197,6 +302,11 @@ if [ -f "/home/jannisreufsteck/thirst-track2/.env" ]; then
 else
     echo "  No configuration file found"
 fi
+
+echo ""
+echo -e "${YELLOW}Bluetooth pairing help:${NC}"
+echo "If you have a Bluetooth scanner, run:"
+echo "  /home/jannisreufsteck/thirst-track2/deployment/scripts/pair-bluetooth-scanner.sh"
 EOF
 
 chmod +x /home/jannisreufsteck/thirst-track2/deployment/scripts/detect-scanner.sh
@@ -219,27 +329,47 @@ import select
 from typing import Optional
 
 def find_scanner_device() -> Optional[str]:
-    """Find the most likely barcode scanner device"""
+    """Find the most likely barcode scanner device (USB or Bluetooth)"""
     devices = evdev.list_devices()
-    
+    scanner_candidates = []
+
     for device_path in devices:
         try:
             device = evdev.InputDevice(device_path)
-            
+
             # Check if device has keyboard capabilities
             caps = device.capabilities()
             if evdev.ecodes.EV_KEY in caps:
                 # Check if it's likely a scanner (has number keys)
                 keys = caps[evdev.ecodes.EV_KEY]
                 number_keys = [evdev.ecodes.KEY_0, evdev.ecodes.KEY_1, evdev.ecodes.KEY_2]
-                
+
                 if any(key in keys for key in number_keys):
-                    print(f"Found potential scanner: {device.name} ({device_path})")
-                    return device_path
-                    
+                    # Prioritize devices with scanner-like names
+                    device_name = device.name.lower()
+                    is_bluetooth = 'bluetooth' in device.phys.lower() if device.phys else False
+                    is_scanner_name = any(keyword in device_name for keyword in
+                                        ['scanner', 'barcode', 'honeywell', 'symbol', 'zebra', 'datalogic'])
+
+                    priority = 0
+                    if is_scanner_name:
+                        priority += 10
+                    if is_bluetooth:
+                        priority += 5  # Bluetooth scanners often have descriptive names
+
+                    scanner_candidates.append((priority, device_path, device.name, is_bluetooth))
+
         except (OSError, PermissionError):
             continue
-    
+
+    # Sort by priority and return the best candidate
+    if scanner_candidates:
+        scanner_candidates.sort(key=lambda x: x[0], reverse=True)
+        best_device = scanner_candidates[0]
+        connection_type = "Bluetooth" if best_device[3] else "USB"
+        print(f"Found potential {connection_type} scanner: {best_device[2]} ({best_device[1]})")
+        return best_device[1]
+
     return None
 
 def test_scanner(device_path: str = None):
@@ -411,19 +541,31 @@ chmod +x /home/jannisreufsteck/thirst-track2/deployment/scripts/configure-scanne
 # Set proper ownership
 chown -R jannisreufsteck:jannisreufsteck /home/jannisreufsteck/thirst-track2/deployment/scripts/
 
-print_status "USB barcode scanner setup completed!"
+print_status "USB and Bluetooth barcode scanner setup completed!"
 echo ""
 echo -e "${YELLOW}Scanner Setup Summary:${NC}"
 echo "✓ Input device permissions configured"
-echo "✓ udev rules created for scanner access"
+echo "✓ Bluetooth service enabled and configured"
+echo "✓ udev rules created for USB and Bluetooth scanner access"
 echo "✓ Scanner detection script created"
 echo "✓ Scanner test script created"
 echo "✓ Configuration helper created"
+echo "✓ Bluetooth pairing helper created"
 echo ""
 echo -e "${YELLOW}Next Steps:${NC}"
+echo ""
+echo -e "${BLUE}For USB Scanners:${NC}"
 echo "1. Connect your USB barcode scanner"
 echo "2. Run: /home/jannisreufsteck/thirst-track2/deployment/scripts/detect-scanner.sh"
 echo "3. Test scanner: /home/jannisreufsteck/thirst-track2/deployment/scripts/test-scanner.py"
 echo "4. Configure device: /home/jannisreufsteck/thirst-track2/deployment/scripts/configure-scanner.sh"
+echo ""
+echo -e "${BLUE}For Bluetooth Scanners:${NC}"
+echo "1. Put your scanner in pairing mode"
+echo "2. Run: /home/jannisreufsteck/thirst-track2/deployment/scripts/pair-bluetooth-scanner.sh"
+echo "3. Follow pairing instructions"
+echo "4. Run: /home/jannisreufsteck/thirst-track2/deployment/scripts/detect-scanner.sh"
+echo "5. Test scanner: /home/jannisreufsteck/thirst-track2/deployment/scripts/test-scanner.py"
+echo "6. Configure device: /home/jannisreufsteck/thirst-track2/deployment/scripts/configure-scanner.sh"
 echo ""
 echo -e "${YELLOW}Note:${NC} You may need to reboot for udev rules to take full effect"
