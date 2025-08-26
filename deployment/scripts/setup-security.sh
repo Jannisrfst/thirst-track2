@@ -223,14 +223,14 @@ sysctl -p
 print_status "Configuring log rotation..."
 
 cat > /etc/logrotate.d/thirst-track << EOF
-/home/pi/thirst-track2/logs/*.log {
+/home/jannisreufsteck/thirst-track2/logs/*.log {
     daily
     missingok
     rotate 30
     compress
     delaycompress
     notifempty
-    create 644 pi pi
+    create 644 jannisreufsteck jannisreufsteck
     postrotate
         systemctl reload thirst-track-backend || true
     endscript
@@ -299,7 +299,7 @@ print_status "Setting up monitoring cron job..."
 # Create network information script
 print_status "Creating network information script..."
 
-cat > /home/pi/thirst-track2/deployment/scripts/network-info.sh << 'EOF'
+cat > /home/jannisreufsteck/thirst-track2/deployment/scripts/network-info.sh << 'EOF'
 #!/bin/bash
 
 # Network Information Script
@@ -353,7 +353,7 @@ else
 fi
 EOF
 
-chmod +x /home/pi/thirst-track2/deployment/scripts/network-info.sh
+chmod +x /home/jannisreufsteck/thirst-track2/deployment/scripts/network-info.sh
 
 # Install QR code generator for easy mobile access
 print_status "Installing QR code generator..."

@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-APP_DIR="/home/pi/thirst-track2"
+APP_DIR="/home/jannisreufsteck/thirst-track2"
 API_URL="http://localhost:5001"
 WEB_URL="http://localhost"
 

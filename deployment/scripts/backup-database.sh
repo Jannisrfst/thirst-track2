@@ -16,7 +16,7 @@ NC='\033[0m' # No Color
 DB_NAME="thirsttrack"
 DB_USER="thirsttrack_user"
 DB_PASSWORD="secure_password_change_me"
-BACKUP_DIR="/home/pi/thirst-track2/backups"
+BACKUP_DIR="/home/jannisreufsteck/thirst-track2/backups"
 DATE=$(date +%Y%m%d_%H%M%S)
 
 # Function to print status
@@ -186,7 +186,7 @@ setup_auto_backup() {
     print_status "Setting up automatic daily backups..."
     
     # Create cron job for daily backups at 2 AM
-    CRON_JOB="0 2 * * * /home/pi/thirst-track2/deployment/scripts/backup-database.sh backup && /home/pi/thirst-track2/deployment/scripts/backup-database.sh cleanup"
+    CRON_JOB="0 2 * * * /home/jannisreufsteck/thirst-track2/deployment/scripts/backup-database.sh backup && /home/jannisreufsteck/thirst-track2/deployment/scripts/backup-database.sh cleanup"
     
     # Add to crontab if not already present
     if ! crontab -l 2>/dev/null | grep -q "backup-database.sh"; then

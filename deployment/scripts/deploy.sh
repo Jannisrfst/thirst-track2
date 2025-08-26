@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-APP_DIR="/home/pi/thirst-track2"
+APP_DIR="/home/jannisreufsteck/thirst-track2"
 DB_NAME="thirsttrack"
 DB_USER="thirsttrack_user"
 DB_PASSWORD="secure_password_change_me"
@@ -34,9 +34,9 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Check if running as pi user
-if [ "$USER" != "pi" ]; then
-    print_error "This script must be run as the 'pi' user"
+# Check if running as jannisreufsteck user
+if [ "$USER" != "jannisreufsteck" ]; then
+    print_error "This script must be run as the 'jannisreufsteck' user"
     exit 1
 fi
 
@@ -128,7 +128,7 @@ mkdir -p $APP_DIR/logs
 
 # Set proper permissions
 print_status "Setting file permissions..."
-sudo chown -R pi:pi $APP_DIR
+sudo chown -R jannisreufsteck:jannisreufsteck $APP_DIR
 chmod +x deployment/scripts/*.sh
 chmod +x wsgi.py
 

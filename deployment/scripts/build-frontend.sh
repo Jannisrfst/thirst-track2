@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-APP_DIR="/home/pi/thirst-track2"
+APP_DIR="/home/jannisreufsteck/thirst-track2"
 FRONTEND_DIR="$APP_DIR/frontend"
 
 echo -e "${BLUE}=== Frontend Build Process ===${NC}"

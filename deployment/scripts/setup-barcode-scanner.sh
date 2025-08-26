@@ -78,7 +78,7 @@ udevadm trigger
 # Create scanner detection script
 print_status "Creating scanner detection script..."
 
-cat > /home/pi/thirst-track2/deployment/scripts/detect-scanner.sh << 'EOF'
+cat > /home/jannisreufsteck/thirst-track2/deployment/scripts/detect-scanner.sh << 'EOF'
 #!/bin/bash
 
 # Barcode Scanner Detection Script
@@ -179,14 +179,14 @@ echo ""
 echo -e "${YELLOW}Scanner test:${NC}"
 echo "To test your barcode scanner:"
 echo "1. Make sure it's plugged in and powered on"
-echo "2. Run: python3 /home/pi/thirst-track2/deployment/scripts/test-scanner.py"
+echo "2. Run: python3 /home/jannisreufsteck/thirst-track2/deployment/scripts/test-scanner.py"
 echo "3. Scan a barcode when prompted"
 echo ""
 
 # Show current configuration
 echo -e "${YELLOW}Current configuration:${NC}"
-if [ -f "/home/pi/thirst-track2/.env" ]; then
-    SCANNER_DEVICE=$(grep SCANNER_DEVICE_PATH /home/pi/thirst-track2/.env | cut -d'=' -f2)
+if [ -f "/home/jannisreufsteck/thirst-track2/.env" ]; then
+    SCANNER_DEVICE=$(grep SCANNER_DEVICE_PATH /home/jannisreufsteck/thirst-track2/.env | cut -d'=' -f2)
     echo "  Configured device: $SCANNER_DEVICE"
     
     if [ -e "$SCANNER_DEVICE" ]; then
@@ -199,12 +199,12 @@ else
 fi
 EOF
 
-chmod +x /home/pi/thirst-track2/deployment/scripts/detect-scanner.sh
+chmod +x /home/jannisreufsteck/thirst-track2/deployment/scripts/detect-scanner.sh
 
 # Create scanner test script
 print_status "Creating scanner test script..."
 
-cat > /home/pi/thirst-track2/deployment/scripts/test-scanner.py << 'EOF'
+cat > /home/jannisreufsteck/thirst-track2/deployment/scripts/test-scanner.py << 'EOF'
 #!/usr/bin/env python3
 
 """
@@ -343,12 +343,12 @@ if __name__ == "__main__":
     test_scanner(device_path)
 EOF
 
-chmod +x /home/pi/thirst-track2/deployment/scripts/test-scanner.py
+chmod +x /home/jannisreufsteck/thirst-track2/deployment/scripts/test-scanner.py
 
 # Create scanner configuration helper
 print_status "Creating scanner configuration helper..."
 
-cat > /home/pi/thirst-track2/deployment/scripts/configure-scanner.sh << 'EOF'
+cat > /home/jannisreufsteck/thirst-track2/deployment/scripts/configure-scanner.sh << 'EOF'
 #!/bin/bash
 
 # Scanner Configuration Helper
@@ -406,10 +406,10 @@ echo "Testing scanner with new configuration..."
 python3 deployment/scripts/test-scanner.py "$NEW_DEVICE"
 EOF
 
-chmod +x /home/pi/thirst-track2/deployment/scripts/configure-scanner.sh
+chmod +x /home/jannisreufsteck/thirst-track2/deployment/scripts/configure-scanner.sh
 
 # Set proper ownership
-chown -R pi:pi /home/pi/thirst-track2/deployment/scripts/
+chown -R jannisreufsteck:jannisreufsteck /home/jannisreufsteck/thirst-track2/deployment/scripts/
 
 print_status "USB barcode scanner setup completed!"
 echo ""
@@ -422,8 +422,8 @@ echo "✓ Configuration helper created"
 echo ""
 echo -e "${YELLOW}Next Steps:${NC}"
 echo "1. Connect your USB barcode scanner"
-echo "2. Run: /home/pi/thirst-track2/deployment/scripts/detect-scanner.sh"
-echo "3. Test scanner: /home/pi/thirst-track2/deployment/scripts/test-scanner.py"
-echo "4. Configure device: /home/pi/thirst-track2/deployment/scripts/configure-scanner.sh"
+echo "2. Run: /home/jannisreufsteck/thirst-track2/deployment/scripts/detect-scanner.sh"
+echo "3. Test scanner: /home/jannisreufsteck/thirst-track2/deployment/scripts/test-scanner.py"
+echo "4. Configure device: /home/jannisreufsteck/thirst-track2/deployment/scripts/configure-scanner.sh"
 echo ""
 echo -e "${YELLOW}Note:${NC} You may need to reboot for udev rules to take full effect"
