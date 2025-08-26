@@ -190,34 +190,37 @@ else
     exit 1
 fi
 
-# Configure network settings for kiosk mode
-print_status "Configuring network settings..."
+# Configure network settings for kiosk mode (COMMENTED OUT - was causing deployment hangs)
+# print_status "Configuring network settings..."
 
-# Disable IPv6 if not needed (reduces attack surface)
-cat >> /etc/sysctl.conf << EOF
+# NOTE: Network configuration disabled to prevent deployment hangs
+# These settings can be applied manually after deployment if needed
 
-# Thirst Track Security Settings
-# Disable IPv6
-net.ipv6.conf.all.disable_ipv6 = 1
-net.ipv6.conf.default.disable_ipv6 = 1
-net.ipv6.conf.lo.disable_ipv6 = 1
-
-# Network security
-net.ipv4.conf.all.send_redirects = 0
-net.ipv4.conf.default.send_redirects = 0
-net.ipv4.conf.all.accept_redirects = 0
-net.ipv4.conf.default.accept_redirects = 0
-net.ipv4.conf.all.accept_source_route = 0
-net.ipv4.conf.default.accept_source_route = 0
-net.ipv4.conf.all.log_martians = 1
-net.ipv4.conf.default.log_martians = 1
-net.ipv4.icmp_echo_ignore_broadcasts = 1
-net.ipv4.icmp_ignore_bogus_error_responses = 1
-net.ipv4.tcp_syncookies = 1
-EOF
-
-# Apply sysctl settings
-sysctl -p
+# # Disable IPv6 if not needed (reduces attack surface)
+# cat >> /etc/sysctl.conf << EOF
+#
+# # Thirst Track Security Settings
+# # Disable IPv6
+# net.ipv6.conf.all.disable_ipv6 = 1
+# net.ipv6.conf.default.disable_ipv6 = 1
+# net.ipv6.conf.lo.disable_ipv6 = 1
+#
+# # Network security
+# net.ipv4.conf.all.send_redirects = 0
+# net.ipv4.conf.default.send_redirects = 0
+# net.ipv4.conf.all.accept_redirects = 0
+# net.ipv4.conf.default.accept_redirects = 0
+# net.ipv4.conf.all.accept_source_route = 0
+# net.ipv4.conf.default.accept_source_route = 0
+# net.ipv4.conf.all.log_martians = 1
+# net.ipv4.conf.default.log_martians = 1
+# net.ipv4.icmp_echo_ignore_broadcasts = 1
+# net.ipv4.icmp_ignore_bogus_error_responses = 1
+# net.ipv4.tcp_syncookies = 1
+# EOF
+#
+# # Apply sysctl settings
+# sysctl -p
 
 # Set up log rotation for application logs
 print_status "Configuring log rotation..."
