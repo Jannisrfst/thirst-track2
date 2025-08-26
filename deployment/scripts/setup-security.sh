@@ -171,7 +171,7 @@ UsePAM yes
 LoginGraceTime 30
 
 # Allow only specific users (adjust as needed)
-AllowUsers pi
+AllowUsers jannisreufsteck
 
 # Disable unused features
 AllowAgentForwarding no
@@ -371,7 +371,7 @@ echo "✓ Log rotation configured"
 echo "✓ System monitoring enabled"
 echo ""
 echo -e "${YELLOW}Next Steps:${NC}"
-echo "1. Run: /home/pi/thirst-track2/deployment/scripts/network-info.sh"
+echo "1. Run: /home/jannisreufsteck/thirst-track2/deployment/scripts/network-info.sh"
 echo "2. Consider setting up SSH key authentication"
 echo "3. Test firewall rules with: sudo ufw status verbose"
 echo "4. Monitor logs with: tail -f /var/log/thirst-track-monitor.log"
