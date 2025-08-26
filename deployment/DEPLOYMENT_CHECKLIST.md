@@ -2,12 +2,7 @@
 
 ## 📋 Pre-Deployment Checklist
 
-### Hardware Setup
-- [ ] Raspberry Pi 4 (4GB+ RAM recommended)
-- [ ] MicroSD card (32GB+, Class 10)
-- [ ] USB barcode scanner
-- [ ] Network connection (Ethernet/WiFi)
-- [ ] Stable power supply
+
 
 ### Software Preparation
 - [ ] Raspberry Pi OS Lite (64-bit) flashed to SD card
